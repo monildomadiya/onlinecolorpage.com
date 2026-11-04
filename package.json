@@ -12,6 +12,7 @@
     "check": "node scripts/check-setup.mjs",
     "secret": "node scripts/set-secret.mjs",
     "admin": "node scripts/create-admin.mjs",
+    "azure:settings": "node scripts/azure-settings.mjs",
     "db:sql": "node scripts/print-sql.mjs",
     "icons": "node scripts/make-icons.mjs"
   },

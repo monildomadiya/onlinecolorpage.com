@@ -94,6 +94,7 @@ npm run typecheck   # tsc --noEmit
 npm run check       # verify Supabase + R2 credentials and schema
 npm run secret      # paste a secret into .env.local without echoing it
 npm run admin       # create the first admin account
+npm run azure:settings  # copy the run-time env to the Azure Web App
 npm run lint        # eslint
 npm run db:sql      # print every migration, ready to paste into Supabase
 npm run icons       # regenerate PNG app icons from public/favicon.svg

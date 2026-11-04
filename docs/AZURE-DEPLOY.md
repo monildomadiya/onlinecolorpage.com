@@ -63,6 +63,20 @@ az webapp config set --resource-group $RG --name $APP --startup-file "node serve
 Server-side secrets are read at run time, so they live here rather than in the
 build. Changing one restarts the app; no rebuild is needed.
 
+Once `.env.local` is filled in, one command copies the run-time half of it to
+the Web App and then waits for `/api/health` to confirm the result:
+
+```bash
+npm run azure:settings
+```
+
+It sends the values as a temporary `@file` rather than as command arguments,
+so they stay out of your shell history and the process list, and prints only a
+masked prefix. Override the target with `AZURE_RESOURCE_GROUP` and
+`AZURE_WEBAPP_NAME` if your names differ.
+
+By hand, the same thing:
+
 ```bash
 az webapp config appsettings set --resource-group $RG --name $APP --settings NODE_ENV=production SCM_DO_BUILD_DURING_DEPLOYMENT=false SUPABASE_SERVICE_ROLE_KEY="sb_secret_..." R2_ACCOUNT_ID="..." R2_ACCESS_KEY_ID="..." R2_SECRET_ACCESS_KEY="..." R2_BUCKET="onlinecolorpage" R2_PUBLIC_BASE_URL="https://cdn.onlinecolorpage.com" ADMIN_BOOTSTRAP_EMAIL="you@example.com"
 ```

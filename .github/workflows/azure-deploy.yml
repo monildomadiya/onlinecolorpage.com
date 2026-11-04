@@ -38,13 +38,17 @@ jobs:
           # NEXT_PUBLIC_* are inlined into the browser bundle at build time, so
           # they belong here rather than in the Web App settings. Every one of
           # them is public by design - the browser receives all of them.
+          # Defaults are this site's own values. They are not secrets: the
+          # browser receives every one of them, and Supabase states plainly
+          # that a publishable key is safe to share. Set the matching
+          # repository variable to override any of them.
           NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://onlinecolorpage.com' }}
           NEXT_PUBLIC_SITE_NAME: ${{ vars.NEXT_PUBLIC_SITE_NAME || 'Online Color Page' }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || 'https://dqtkogyediyzqcvawfnn.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_ymSlf1QvDhg-x5oRkkBmNQ__YzWpBwM' }}
           NEXT_PUBLIC_ADSENSE_CLIENT: ${{ vars.NEXT_PUBLIC_ADSENSE_CLIENT }}
           NEXT_PUBLIC_GA_ID: ${{ vars.NEXT_PUBLIC_GA_ID }}
-          R2_PUBLIC_BASE_URL: ${{ vars.R2_PUBLIC_BASE_URL }}
+          R2_PUBLIC_BASE_URL: ${{ vars.R2_PUBLIC_BASE_URL || 'https://cdn.onlinecolorpage.com' }}
         run: npm run build
 
       - name: Assemble the standalone server

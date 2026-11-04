@@ -99,7 +99,38 @@ wired up. `"r2":false` means the `R2_*` settings above did not take.
 
 ---
 
-## 3. Custom domain and HTTPS
+## 3a. Custom domain on the Free (F1) tier
+
+App Service Free accepts no custom hostnames at all, so `onlinecolorpage.com`
+cannot be added to the app. Cloudflare fronts it instead, which costs nothing:
+
+1. **DNS** — proxied `CNAME` records for the apex and `www`, both pointing at
+   `<app>.azurewebsites.net`. Cloudflare flattens the apex CNAME and issues the
+   certificate.
+2. **A Worker on the route** `example.com/*` and `www.example.com/*`. A proxied
+   CNAME alone is not enough: Cloudflare forwards the visitor's `Host`, App
+   Service does not recognise it and answers *Web App not found*. The Worker
+   rewrites the request URL to the `azurewebsites.net` hostname, which is what
+   sets `Host`, and rewrites any absolute `Location` in the response back to
+   the public hostname so redirects do not walk visitors onto the Azure name.
+
+   `workers/onlinecolorpage-proxy.js` in this repo is that Worker.
+
+3. Leave SSL/TLS mode on **Full**. The origin presents its own
+   `*.azurewebsites.net` certificate, which does not match the SNI Cloudflare
+   sends, so *Full (strict)* would reject it.
+
+> Origin Rules' **Host Header override** would remove the need for the Worker
+> entirely — it is the cleaner answer — but it is not available on the Free
+> plan (`not entitled to use the HostHeader override`).
+
+Workers Free allows 100,000 requests a day. Past that, or once the app is on
+B1 or higher, delete the Worker and its routes and use the custom domain
+directly, as in the next section.
+
+---
+
+## 3b. Custom domain and HTTPS (B1 and above)
 
 Get the two values your DNS needs:
 

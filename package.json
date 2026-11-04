@@ -1,0 +1,48 @@
+{
+  "name": "onlinecolorpage",
+  "version": "1.0.0",
+  "private": true,
+  "description": "onlinecolorpage.com - free printable & online coloring pages for kids",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "check": "node scripts/check-setup.mjs",
+    "secret": "node scripts/set-secret.mjs",
+    "admin": "node scripts/create-admin.mjs",
+    "db:sql": "node scripts/print-sql.mjs",
+    "icons": "node scripts/make-icons.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1161.0",
+    "@aws-sdk/s3-request-presigner": "^3.1161.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.118.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.67.0",
+    "next": "15.5.28",
+    "pdf-lib": "^1.17.1",
+    "react": "19.1.10",
+    "react-dom": "19.1.10",
+    "recharts": "^3.10.1",
+    "sharp": "^0.35.5",
+    "tailwind-merge": "^3.7.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
+    "@tailwindcss/postcss": "^4.3.4",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "15.5.28",
+    "tailwindcss": "^4.3.4",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  }
+}

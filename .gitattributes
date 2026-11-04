@@ -1,0 +1,9 @@
+# The image is built on Linux; keep everything LF in the repository so a
+# Windows checkout cannot ship CRLF into the container.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.webp binary
+*.pdf binary
+*.ico binary

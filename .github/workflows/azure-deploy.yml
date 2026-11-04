@@ -1,0 +1,75 @@
+name: Build and deploy to Azure
+
+# Builds the Docker image, pushes it to Azure Container Registry and restarts
+# the Web App. See docs/AZURE-DEPLOY.md for the one-time setup and the list of
+# secrets this needs.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: onlinecolorpage
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to Azure Container Registry
+        run: az acr login --name ${{ secrets.ACR_NAME }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ secrets.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # NEXT_PUBLIC_* values are inlined at build time, so they belong here
+          # rather than in the Web App settings.
+          build-args: |
+            NEXT_PUBLIC_SITE_URL=${{ secrets.NEXT_PUBLIC_SITE_URL }}
+            NEXT_PUBLIC_SITE_NAME=${{ secrets.NEXT_PUBLIC_SITE_NAME }}
+            NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+            NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+            NEXT_PUBLIC_ADSENSE_CLIENT=${{ secrets.NEXT_PUBLIC_ADSENSE_CLIENT }}
+            NEXT_PUBLIC_GA_ID=${{ secrets.NEXT_PUBLIC_GA_ID }}
+            R2_PUBLIC_BASE_URL=${{ secrets.R2_PUBLIC_BASE_URL }}
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          images: ${{ secrets.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Wait for the health check
+        run: |
+          url="https://${{ secrets.AZURE_WEBAPP_NAME }}.azurewebsites.net/api/health"
+          for attempt in $(seq 1 30); do
+            if curl -fsS --max-time 10 "$url" > /dev/null; then
+              echo "Healthy after $attempt attempt(s)."
+              exit 0
+            fi
+            echo "Not ready yet (attempt $attempt) - retrying in 10s."
+            sleep 10
+          done
+          echo "::error::App did not become healthy within 5 minutes."
+          exit 1

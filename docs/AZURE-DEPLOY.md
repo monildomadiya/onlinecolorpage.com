@@ -210,6 +210,36 @@ build needs them.
 
 ---
 
+## Deploying by hand through Kudu
+
+Useful before the workflow has credentials, or to put a specific build up
+without a push. `https://<scm-host>/api/zip/site/wwwroot/` accepts a PUT of a
+zip and is authenticated by the Azure AD session, so no publishing credentials
+are needed.
+
+Two things will bite you:
+
+**It merges, it does not replace.** Files in the zip overwrite their
+counterparts and everything else is left alone, so the previous build's
+prerendered HTML survives under `.next/server/app/`. The symptom is precise
+and confusing: dynamic routes serve the new code while `/`, `/about` and the
+other static pages serve the old. Delete `.next` first:
+
+```
+DELETE /api/vfs/site/wwwroot/.next/?recursive=true     (header: If-Match: *)
+```
+
+**Restart after the upload, not before.** The running server holds the build
+it started with.
+
+The browser's upload limit means a bundle of this size goes up in parts. Zip
+`.next` + `server.js` + `package.json` + `public` separately from
+`node_modules/@img`, `node_modules/next` and the rest, with paths relative to
+the bundle root, and PUT each to the same endpoint. `node_modules` only needs
+re-uploading when `package-lock.json` changes.
+
+---
+
 ## Notes specific to this app
 
 **Scaling past one instance.** Next.js writes its ISR cache to the instance's

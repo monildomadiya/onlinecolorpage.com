@@ -21,7 +21,6 @@ export default async function PrivacyRoute() {
   return (
     <Prose
       title="Privacy Policy"
-      emoji="🔒"
       intro={`How ${site.name} handles data. Short version: we ask children for nothing, and artwork never leaves the device.`}
       updated="3 November 2026"
       trail={[

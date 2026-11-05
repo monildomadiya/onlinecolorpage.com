@@ -31,10 +31,10 @@ export function StickerTray({
               aria-pressed={size === value}
               aria-label={['Tiny', 'Small', 'Big', 'Huge'][i]}
               className={cn(
-                'tap-big grid flex-1 place-items-center rounded-2xl font-display text-xs font-extrabold transition',
+                'tap-big grid flex-1 place-items-center rounded-2xl border font-display text-xs font-extrabold transition',
                 size === value
-                  ? 'bg-grape-500 text-white'
-                  : 'bg-white text-ink-soft shadow-[0_3px_0_var(--color-cream-deep)] hover:bg-cream',
+                  ? 'border-ink/10 bg-coral text-white'
+                  : 'border-ink/10 bg-white text-ink-soft hover:-translate-y-0.5 hover:bg-cream-deep hover:text-ink',
               )}
             >
               {['S', 'M', 'L', 'XL'][i]}
@@ -57,8 +57,10 @@ export function StickerTray({
                 aria-pressed={sticker === glyph}
                 aria-label={`Sticker ${glyph}`}
                 className={cn(
-                  'grid aspect-square place-items-center rounded-xl text-xl transition hover:scale-110',
-                  sticker === glyph ? 'bg-grape-100 ring-2 ring-grape-500' : 'bg-white',
+                  'grid aspect-square place-items-center rounded-xl border text-xl transition hover:scale-110',
+                  sticker === glyph
+                    ? 'border-grape-400/60 bg-grape-100/70 shadow-[0_0_0_2px_rgb(139_79_245_/_0.35)]'
+                    : 'border-ink/10 bg-white hover:bg-cream-deep',
                 )}
               >
                 <span aria-hidden>{glyph}</span>
@@ -68,7 +70,7 @@ export function StickerTray({
         </div>
       ))}
 
-      <p className="rounded-2xl bg-sunny/15 px-3 py-2 text-xs font-bold text-ink-soft">
+      <p className="rounded-2xl border border-sunny/40 bg-sunny/15 px-3 py-2 text-xs font-bold text-ink-soft">
         Tip: pick a sticker, then tap the picture to place it. Undo removes the last one.
       </p>
     </div>

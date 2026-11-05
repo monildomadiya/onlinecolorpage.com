@@ -35,7 +35,7 @@ export default async function DemoRoute() {
 
       <header className="mb-5">
         <h1 className="font-display text-3xl font-extrabold text-ink sm:text-4xl">
-          🎨 Try the coloring game
+          Try the coloring game
         </h1>
         <p className="mt-2 max-w-2xl text-sm font-semibold text-ink-soft sm:text-base">
           A sample picture to play with. Pick a colour, tap inside a shape, and it fills instantly.
@@ -65,7 +65,7 @@ export default async function DemoRoute() {
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link href="/coloring-pages" className="btn-kid">
-            🖍️ Browse all coloring pages
+            Browse all coloring pages
           </Link>
           <Link href="/how-to-color" className="btn-kid btn-ghost">
             How it works

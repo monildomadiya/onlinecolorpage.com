@@ -1,36 +1,37 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Download, Eye, Palette } from 'lucide-react';
+import { Eye, ImageOff } from 'lucide-react';
 import { publicUrl } from '@/lib/r2/public';
-import { ageLabel, cn, formatNumber } from '@/lib/utils';
+import { frameStyle } from '@/lib/frames';
+import { cn, formatNumber } from '@/lib/utils';
 import type { ColoringPageWithCategory, Difficulty } from '@/types/db';
 
-const DIFFICULTY_STYLE: Record<Difficulty, { label: string; className: string }> = {
-  easy: { label: 'Easy', className: 'bg-mint/20 text-mint-dark' },
-  medium: { label: 'Medium', className: 'bg-sunny/25 text-sunny-dark' },
-  hard: { label: 'Tricky', className: 'bg-coral/20 text-coral-dark' },
+const DIFFICULTY_LABEL: Record<Difficulty, string> = {
+  easy: 'Easy',
+  medium: 'Medium',
+  hard: 'Tricky',
 };
 
 export function PageCard({
   page,
+  index = 0,
   priority = false,
   className,
 }: {
   page: ColoringPageWithCategory;
+  /** Position in the grid - decides which frame colour the card wears. */
+  index?: number;
   priority?: boolean;
   className?: string;
 }) {
   const src = publicUrl(page.thumb_key ?? page.image_key);
-  const accent = page.category?.color ?? '#8b4ff5';
-  const difficulty = DIFFICULTY_STYLE[page.difficulty];
 
   return (
-    <article className={cn('card-kid card-hover group relative overflow-hidden', className)}>
-      <Link href={`/color/${page.slug}`} className="block focus-visible:outline-none">
-        <div
-          className="relative aspect-[4/5] overflow-hidden rounded-t-[1.75rem] bg-white"
-          style={{ boxShadow: `inset 0 0 0 4px ${accent}1f` }}
-        >
+    <article className={cn('frame-card group', className)} style={frameStyle(index)}>
+      <Link href={`/color/${page.slug}`} className="flex flex-1 flex-col focus-visible:outline-none">
+        <div className="frame-media aspect-[4/5]">
+          <span className="frame-tag">{DIFFICULTY_LABEL[page.difficulty]}</span>
+
           {src ? (
             <Image
               src={src}
@@ -41,78 +42,31 @@ export function PageCard({
               className="object-contain p-3 transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
-            <div className="grid size-full place-items-center text-5xl" aria-hidden>
-              🎨
+            <div className="grid size-full place-items-center text-ink-soft/25" aria-hidden>
+              <ImageOff className="size-10" />
             </div>
           )}
 
-          {page.is_featured && (
-            <span className="absolute top-2.5 left-2.5 rounded-full bg-sunny px-2.5 py-1 font-display text-[11px] font-extrabold text-ink shadow-sm">
-              ⭐ Top pick
+          {page.view_count > 0 && (
+            <span className="absolute bottom-1.5 left-2 inline-flex items-center gap-1 text-[0.62rem] font-extrabold text-ink-soft/55">
+              <Eye className="size-3" aria-hidden />
+              {formatNumber(page.view_count)}
             </span>
           )}
-
-          <span
-            className={cn(
-              'absolute top-2.5 right-2.5 rounded-full px-2.5 py-1 font-display text-[11px] font-extrabold',
-              difficulty.className,
-            )}
-          >
-            {difficulty.label}
-          </span>
-
-          {/* Hover/focus call-to-action - also visible on touch via the buttons below */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden translate-y-2 justify-center bg-gradient-to-t from-white via-white/90 to-transparent pt-8 pb-3 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 sm:flex">
-            <span className="btn-kid pointer-events-auto rounded-xl px-4 py-2 text-sm">
-              <Palette className="size-4" aria-hidden /> Color it!
-            </span>
-          </div>
         </div>
 
-        <div className="p-3.5 pb-2">
-          <h3 className="font-display text-base leading-tight font-extrabold text-ink line-clamp-2">
-            {page.title}
-          </h3>
-
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] font-bold text-ink-soft/80">
-            {page.category && (
-              <span className="inline-flex items-center gap-1">
-                <span aria-hidden>{page.category.emoji ?? '🎨'}</span>
-                {page.category.name}
-              </span>
-            )}
-            <span>{ageLabel(page.age_min, page.age_max)}</span>
-          </div>
-        </div>
+        <h3 className="frame-label line-clamp-2">{page.title}</h3>
       </Link>
-
-      <div className="flex items-center justify-between border-t-2 border-cream-deep px-3.5 py-2 text-[11px] font-bold text-ink-soft/70">
-        <span className="inline-flex items-center gap-1" title={`${page.view_count} views`}>
-          <Eye className="size-3.5" aria-hidden />
-          {formatNumber(page.view_count)}
-        </span>
-        <span className="inline-flex items-center gap-1" title={`${page.color_count} colorings`}>
-          <Palette className="size-3.5" aria-hidden />
-          {formatNumber(page.color_count)}
-        </span>
-        <span className="inline-flex items-center gap-1" title={`${page.download_count} downloads`}>
-          <Download className="size-3.5" aria-hidden />
-          {formatNumber(page.download_count)}
-        </span>
-      </div>
     </article>
   );
 }
 
 /** Matching placeholder used while a grid streams in. */
-export function PageCardSkeleton() {
+export function PageCardSkeleton({ index = 0 }: { index?: number }) {
   return (
-    <div className="card-kid overflow-hidden">
-      <div className="skeleton aspect-[4/5] rounded-t-[1.75rem]" />
-      <div className="space-y-2 p-3.5">
-        <div className="skeleton h-4 w-4/5 rounded-full" />
-        <div className="skeleton h-3 w-2/5 rounded-full" />
-      </div>
+    <div className="frame-card" style={frameStyle(index)}>
+      <div className="skeleton aspect-[4/5]" />
+      <div className="frame-label">&nbsp;</div>
     </div>
   );
 }

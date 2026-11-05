@@ -38,7 +38,7 @@ export function SearchBox({
       </label>
       <Search
         aria-hidden
-        className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-grape-400"
+        className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-ink-soft/60"
       />
       <input
         id="site-search"
@@ -49,12 +49,9 @@ export function SearchBox({
         onChange={(e) => setValue(e.target.value)}
         placeholder={placeholder}
         enterKeyHint="search"
-        className="h-12 w-full rounded-2xl border-2 border-grape-100 bg-white pr-24 pl-12 text-base font-bold text-ink placeholder:font-semibold placeholder:text-ink-soft/50 focus:border-grape-400 focus:outline-none"
+        className="h-13 w-full rounded-[var(--radius-btn)] border border-ink/12 bg-white pr-24 pl-12 text-base text-ink transition placeholder:text-ink-soft/55 focus:border-ink/35 focus:outline-none"
       />
-      <button
-        type="submit"
-        className="btn-kid absolute top-1.5 right-1.5 h-9 rounded-xl px-4 text-sm"
-      >
+      <button type="submit" className="btn-kid absolute top-2 right-2 h-9 px-4 py-0 text-sm">
         Go
       </button>
     </form>

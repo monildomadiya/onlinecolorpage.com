@@ -19,7 +19,6 @@ export default async function ContactRoute() {
   return (
     <Prose
       title="Contact us"
-      emoji="✉️"
       intro="Requests, broken pages, classroom questions - all welcome."
       trail={[
         { name: 'Home', path: '/' },

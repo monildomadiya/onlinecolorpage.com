@@ -1,3 +1,4 @@
+import { Grid3x3 } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getCategoriesWithCounts } from '@/lib/queries';
 import { CategoryCard } from '@/components/site/CategoryCard';
@@ -30,7 +31,7 @@ export default async function CategoriesRoute() {
 
       <header className="mb-8">
         <h1 className="font-display text-3xl font-extrabold text-ink sm:text-4xl">
-          🗂️ Pick a theme
+          Pick a theme
         </h1>
         <p className="mt-2 max-w-2xl text-sm font-semibold text-ink-soft sm:text-base">
           {categories.length} collections and {total} free coloring pages. Tap a theme to see
@@ -42,7 +43,7 @@ export default async function CategoriesRoute() {
 
       {categories.length === 0 ? (
         <EmptyState
-          emoji="🗂️"
+          icon={Grid3x3}
           title="No categories yet"
           message="Add a few categories from the admin panel and they will appear here."
           action={

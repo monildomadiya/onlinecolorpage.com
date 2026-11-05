@@ -1,3 +1,4 @@
+import { SearchX } from 'lucide-react';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { getPages, getPopularTags, type SortOption } from '@/lib/queries';
@@ -63,7 +64,7 @@ export default async function AllPagesRoute({ searchParams }: Props) {
 
       <header className="mb-6">
         <h1 className="font-display text-3xl font-extrabold text-ink sm:text-4xl">
-          🖍️ All coloring pages
+          All coloring pages
         </h1>
         <p className="mt-2 max-w-2xl text-sm font-semibold text-ink-soft sm:text-base">
           {result.total > 0
@@ -80,7 +81,7 @@ export default async function AllPagesRoute({ searchParams }: Props) {
 
       {result.items.length === 0 ? (
         <EmptyState
-          emoji="🔍"
+          icon={SearchX}
           title="Nothing matches that yet"
           message="Try clearing the filters, or have a look at the categories instead."
           action={

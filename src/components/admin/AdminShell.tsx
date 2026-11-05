@@ -18,6 +18,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import { CrayonMark } from '@/components/ui/Decor';
 import { cn } from '@/lib/utils';
 import type { Role } from '@/types/db';
 
@@ -76,10 +77,10 @@ export function AdminShell({
             key={href}
             href={href}
             className={cn(
-              'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold transition',
+              'flex items-center gap-3 rounded-2xl border px-3 py-2.5 text-sm font-bold transition',
               active
-                ? 'bg-violet-600 text-white shadow-sm'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+                ? 'border-ink/10 bg-grape-600 text-white'
+                : 'border-transparent text-slate-600 hover:border-ink/20 hover:bg-cream-deep hover:text-slate-900',
             )}
           >
             <Icon className="size-4.5 shrink-0" aria-hidden />
@@ -91,23 +92,23 @@ export function AdminShell({
   );
 
   return (
-    <div className="min-h-dvh bg-slate-50 text-slate-900">
+    <div className="min-h-dvh text-slate-900">
       {/* ---------------- top bar ---------------- */}
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white">
+      <header className="sticky top-0 z-40 border-b border-ink/10 bg-white">
         <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? 'Close menu' : 'Open menu'}
             aria-expanded={open}
-            className="grid size-10 place-items-center rounded-xl text-slate-600 hover:bg-slate-100 lg:hidden"
+            className="grid size-10 place-items-center rounded-2xl text-slate-600 transition hover:bg-cream-deep lg:hidden"
           >
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
 
           <Link href="/admin" className="flex items-center gap-2">
-            <span className="grid size-9 place-items-center rounded-xl bg-violet-600 text-lg">
-              🖍️
+            <span className="grid size-9 place-items-center rounded-2xl bg-grape-600 text-white">
+              <CrayonMark className="size-5" />
             </span>
             <span className="text-sm leading-tight font-extrabold">
               Online Color Page
@@ -122,7 +123,7 @@ export function AdminShell({
               href="/"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden items-center gap-1.5 rounded-xl border border-slate-300 px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-50 sm:inline-flex"
+              className="hidden items-center gap-1.5 rounded-full border border-ink/10 bg-white px-3.5 py-2 text-xs font-bold text-slate-600 transition hover:-translate-y-0.5 hover:bg-cream-deep sm:inline-flex"
             >
               View site
               <ExternalLink className="size-3.5" aria-hidden />
@@ -139,7 +140,7 @@ export function AdminShell({
               <button
                 type="submit"
                 title="Sign out"
-                className="grid size-10 place-items-center rounded-xl text-slate-500 transition hover:bg-rose-50 hover:text-rose-600"
+                className="grid size-10 place-items-center rounded-2xl text-slate-500 transition hover:bg-rose-50/80 hover:text-rose-600"
               >
                 <LogOut className="size-4.5" aria-hidden />
                 <span className="sr-only">Sign out</span>
@@ -163,7 +164,7 @@ export function AdminShell({
               onClick={() => setOpen(false)}
               aria-hidden
             />
-            <aside className="fixed top-16 bottom-0 left-0 z-40 w-64 overflow-y-auto border-r border-slate-200 bg-white p-4 lg:hidden">
+            <aside className="fixed top-16 bottom-0 left-0 z-40 w-64 overflow-y-auto border-r border-ink/10 bg-white p-4 lg:hidden">
               {nav}
             </aside>
           </>

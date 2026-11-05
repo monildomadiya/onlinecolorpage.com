@@ -41,7 +41,21 @@ export default async function OgImage() {
             boxShadow: '0 24px 0 rgba(43,33,64,0.18)',
           }}
         >
-          <div style={{ fontSize: 104, lineHeight: 1 }}>🖍️ 🎨 ✏️</div>
+          {/* Three crayon tips, drawn as plain blocks: the OG renderer has no
+              emoji font, and shapes travel better than glyphs anyway. */}
+          <div style={{ display: 'flex', gap: 18 }}>
+            {['#ff6b81', '#ffc83d', '#38bdf8'].map((color) => (
+              <div
+                key={color}
+                style={{
+                  width: 56,
+                  height: 104,
+                  background: color,
+                  borderRadius: '10px 10px 28px 28px',
+                }}
+              />
+            ))}
+          </div>
 
           <div
             style={{

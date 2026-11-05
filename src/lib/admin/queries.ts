@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin';
+import { isSupabaseAdminConfigured } from '@/lib/env';
 import type {
   AdSlot,
   AdminStats,
@@ -37,7 +38,14 @@ export const EMPTY_STATS: AdminStats = {
   colorings_7d: 0,
 };
 
+/**
+ * A page renders alongside its layout, so these run even when the layout is
+ * about to replace the whole area with <SetupRequired />. Bailing out keeps
+ * that screen from being pre-empted by a 500 thrown down here.
+ */
 export async function getAdminStats(): Promise<AdminStats> {
+  if (!isSupabaseAdminConfigured) return EMPTY_STATS;
+
   const supabase = createAdminClient();
   const { data, error } = await supabase.rpc('admin_stats');
 
@@ -50,6 +58,8 @@ export async function getAdminStats(): Promise<AdminStats> {
 }
 
 export async function getEventsDaily(days = 30): Promise<DailyPoint[]> {
+  if (!isSupabaseAdminConfigured) return [];
+
   const supabase = createAdminClient();
   const { data, error } = await supabase.rpc('events_daily', { p_days: days });
 
@@ -85,6 +95,10 @@ export interface AdminPageQuery {
 export async function listPages(query: AdminPageQuery = {}) {
   const page = Math.max(1, query.page ?? 1);
   const perPage = Math.min(Math.max(query.perPage ?? 25, 1), 100);
+
+  if (!isSupabaseAdminConfigured) {
+    return { items: [], total: 0, page, perPage, totalPages: 0 };
+  }
 
   const supabase = createAdminClient();
   let builder = supabase.from('coloring_pages').select(PAGE_SELECT, { count: 'exact' });
@@ -146,6 +160,8 @@ export async function listPages(query: AdminPageQuery = {}) {
 }
 
 export async function getPageById(id: string): Promise<ColoringPage | null> {
+  if (!isSupabaseAdminConfigured) return null;
+
   const supabase = createAdminClient();
   const { data } = await supabase.from('coloring_pages').select('*').eq('id', id).maybeSingle();
   return (data as ColoringPage) ?? null;
@@ -157,6 +173,8 @@ export async function getPageById(id: string): Promise<ColoringPage | null> {
 
 /** All categories, active or not, with published-page counts. */
 export async function listCategories(): Promise<(Category & { page_count: number })[]> {
+  if (!isSupabaseAdminConfigured) return [];
+
   const supabase = createAdminClient();
 
   const [{ data: categories }, { data: pages }] = await Promise.all([
@@ -184,6 +202,10 @@ export async function listMedia(opts: { kind?: string; page?: number; perPage?: 
   const page = Math.max(1, opts.page ?? 1);
   const perPage = Math.min(Math.max(opts.perPage ?? 40, 1), 120);
 
+  if (!isSupabaseAdminConfigured) {
+    return { items: [], total: 0, page, perPage, totalPages: 0 };
+  }
+
   const supabase = createAdminClient();
   let builder = supabase
     .from('media')
@@ -210,6 +232,8 @@ export async function listMedia(opts: { kind?: string; page?: number; perPage?: 
 /* ------------------------------------------------------------------ */
 
 export async function getRawSettings(): Promise<Record<string, Record<string, unknown>>> {
+  if (!isSupabaseAdminConfigured) return {};
+
   const supabase = createAdminClient();
   const { data } = await supabase.from('settings').select('key, value');
 
@@ -219,12 +243,16 @@ export async function getRawSettings(): Promise<Record<string, Record<string, un
 }
 
 export async function listAdSlots(): Promise<AdSlot[]> {
+  if (!isSupabaseAdminConfigured) return [];
+
   const supabase = createAdminClient();
   const { data } = await supabase.from('ad_slots').select('*').order('slot_key');
   return (data ?? []) as AdSlot[];
 }
 
 export async function listProfiles(): Promise<Profile[]> {
+  if (!isSupabaseAdminConfigured) return [];
+
   const supabase = createAdminClient();
   const { data } = await supabase
     .from('profiles')
@@ -239,6 +267,8 @@ export async function listProfiles(): Promise<Profile[]> {
 /* ------------------------------------------------------------------ */
 
 export async function getTopPages(limit = 10) {
+  if (!isSupabaseAdminConfigured) return [];
+
   const supabase = createAdminClient();
   const { data } = await supabase
     .from('coloring_pages')
@@ -255,6 +285,10 @@ export async function getTopPages(limit = 10) {
 
 /** Device and country splits over the last `days`, computed in one pass. */
 export async function getAudienceSplit(days = 30) {
+  if (!isSupabaseAdminConfigured) {
+    return { devices: [], countries: [], events: [], total: 0 };
+  }
+
   const since = new Date(Date.now() - days * 86_400_000).toISOString();
 
   const supabase = createAdminClient();

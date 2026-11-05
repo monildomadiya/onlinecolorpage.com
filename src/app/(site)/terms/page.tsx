@@ -19,7 +19,6 @@ export default async function TermsRoute() {
   return (
     <Prose
       title="Terms of Use"
-      emoji="📜"
       intro="Plain-English rules for using the coloring pages on this site."
       updated="3 November 2026"
       trail={[

@@ -7,6 +7,8 @@
  * data make these APIs throw rather than return empty.
  */
 
+import { Compass, Crown, Palette, Rainbow, Star, Trophy, type LucideIcon } from 'lucide-react';
+
 const DB_NAME = 'onlinecolorpage';
 const DB_VERSION = 1;
 const STORE = 'artwork';
@@ -172,17 +174,17 @@ const EMPTY_REWARDS: Rewards = { finished: [], stars: 0, streakDays: 0, lastDay:
 export interface Badge {
   id: string;
   label: string;
-  emoji: string;
+  icon: LucideIcon;
   need: number;
 }
 
 export const BADGES: Badge[] = [
-  { id: 'first', label: 'First Masterpiece', emoji: '🎨', need: 1 },
-  { id: 'five', label: 'Colour Explorer', emoji: '🧭', need: 5 },
-  { id: 'ten', label: 'Rainbow Maker', emoji: '🌈', need: 10 },
-  { id: 'twentyfive', label: 'Art Star', emoji: '⭐', need: 25 },
-  { id: 'fifty', label: 'Crayon Champion', emoji: '🏆', need: 50 },
-  { id: 'hundred', label: 'Legend of Colour', emoji: '👑', need: 100 },
+  { id: 'first', label: 'First Masterpiece', icon: Palette, need: 1 },
+  { id: 'five', label: 'Colour Explorer', icon: Compass, need: 5 },
+  { id: 'ten', label: 'Rainbow Maker', icon: Rainbow, need: 10 },
+  { id: 'twentyfive', label: 'Art Star', icon: Star, need: 25 },
+  { id: 'fifty', label: 'Crayon Champion', icon: Trophy, need: 50 },
+  { id: 'hundred', label: 'Legend of Colour', icon: Crown, need: 100 },
 ];
 
 export function readRewards(): Rewards {

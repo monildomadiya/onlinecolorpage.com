@@ -1,11 +1,19 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Download, Printer, Share2, X } from 'lucide-react';
+import { Download, PartyPopper, Printer, Share2, Star, X } from 'lucide-react';
 import type { Badge } from './storage';
 import { cn } from '@/lib/utils';
 
-const CONFETTI_COLORS = ['#FFC83D', '#FF6B81', '#38BDF8', '#34D399', '#8B4FF5', '#FF8A3D', '#F472B6'];
+const CONFETTI_COLORS = [
+  '#FFC83D',
+  '#FF6B81',
+  '#38BDF8',
+  '#34D399',
+  '#8B4FF5',
+  '#FF8A3D',
+  '#F472B6',
+];
 
 interface Piece {
   x: number;
@@ -133,7 +141,7 @@ export function FinishCard({
     <>
       <Confetti />
       <div
-        className="fixed inset-0 z-[80] grid place-items-center bg-ink/60 p-4 backdrop-blur-sm"
+        className="fixed inset-0 z-[80] grid place-items-center bg-ink/60 p-4"
         role="dialog"
         aria-modal="true"
         aria-labelledby="finish-title"
@@ -147,14 +155,17 @@ export function FinishCard({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="tap-big absolute top-2 right-2 grid place-items-center rounded-2xl text-ink-soft hover:bg-cream"
+            className="tap-big absolute top-2 right-2 grid place-items-center rounded-2xl text-ink-soft transition hover:bg-cream-deep"
           >
             <X className="size-5" aria-hidden />
           </button>
 
-          <p className="font-display text-4xl" aria-hidden>
-            🎉
-          </p>
+          <span
+            aria-hidden
+            className="mx-auto grid size-14 place-items-center rounded-3xl border border-ink/10 bg-butter text-white"
+          >
+            <PartyPopper className="size-7" />
+          </span>
           <h2 id="finish-title" className="mt-1 font-display text-2xl font-extrabold text-ink">
             Beautiful work!
           </h2>
@@ -165,41 +176,53 @@ export function FinishCard({
             <img
               src={preview}
               alt="Your finished coloring"
-              className="mx-auto mt-4 max-h-56 w-auto rounded-2xl border-4 border-cream-deep bg-white object-contain"
+              className="mx-auto mt-4 max-h-56 w-auto rounded-2xl border border-ink/10 bg-white object-contain shadow-[0_0_0_1px_rgb(28_22_48_/_0.08),0_14px_34px_-16px_rgb(60_36_120_/_0.55)]"
             />
           )}
 
           <div className="mt-4 flex items-center justify-center gap-1.5 font-display text-lg font-extrabold text-sunny-dark">
-            {'⭐'.repeat(3)}
+            {Array.from({ length: 3 }, (_, i) => (
+              <Star key={i} className="size-5 fill-sunny text-sunny" aria-hidden />
+            ))}
             <span className="ml-1 text-ink">+3 stars</span>
           </div>
           <p className="mt-1 text-xs font-bold text-ink-soft">{stars} stars collected so far</p>
 
           {badge && (
-            <div className="mt-4 rounded-2xl bg-sunny/20 p-3">
+            <div className="mt-4 rounded-2xl border border-sunny/40 bg-sunny/18 p-3">
               <p className="font-display text-xs font-extrabold tracking-wide text-sunny-dark uppercase">
                 New badge unlocked!
               </p>
-              <p className="mt-1 font-display text-lg font-extrabold text-ink">
-                <span aria-hidden className="mr-1.5 text-2xl">
-                  {badge.emoji}
-                </span>
+              <p className="mt-1 flex items-center justify-center gap-1.5 font-display text-lg font-extrabold text-ink">
+                <badge.icon className="size-5 text-sunny-dark" aria-hidden />
                 {badge.label}
               </p>
             </div>
           )}
 
           <div className={cn('mt-5 grid gap-2', canShare ? 'grid-cols-3' : 'grid-cols-2')}>
-            <button type="button" onClick={onDownload} className="btn-kid btn-mint flex-col !gap-0.5 py-3 text-xs">
+            <button
+              type="button"
+              onClick={onDownload}
+              className="btn-kid btn-mint flex-col !gap-0.5 py-3 text-xs"
+            >
               <Download className="size-5" aria-hidden />
               Save
             </button>
-            <button type="button" onClick={onPrint} className="btn-kid btn-sky flex-col !gap-0.5 py-3 text-xs">
+            <button
+              type="button"
+              onClick={onPrint}
+              className="btn-kid btn-sky flex-col !gap-0.5 py-3 text-xs"
+            >
               <Printer className="size-5" aria-hidden />
               Print
             </button>
             {canShare && (
-              <button type="button" onClick={onShare} className="btn-kid btn-sunny flex-col !gap-0.5 py-3 text-xs">
+              <button
+                type="button"
+                onClick={onShare}
+                className="btn-kid btn-sunny flex-col !gap-0.5 py-3 text-xs"
+              >
                 <Share2 className="size-5" aria-hidden />
                 Share
               </button>

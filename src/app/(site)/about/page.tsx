@@ -19,7 +19,6 @@ export default async function AboutRoute() {
   return (
     <Prose
       title={`About ${site.name}`}
-      emoji="💜"
       intro={site.tagline}
       trail={[
         { name: 'Home', path: '/' },

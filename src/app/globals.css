@@ -1,51 +1,82 @@
 @import 'tailwindcss';
 
+/* The site is light only. Pointing the dark variant at an explicit
+   [data-theme="dark"] - which nothing sets - keeps any dark: utility left in
+   the components inert instead of firing off the OS preference. */
+@custom-variant dark (&:where([data-theme='dark'] *));
+
 /* ===========================================================================
-   Design tokens
-   A deliberately bright, high-contrast "crayon box" palette. The site is for
-   3-12 year olds, so it stays light-themed on purpose - `color-scheme: light`
-   below stops browsers from auto-inverting it.
+   Paper & Pastel - design tokens
+
+   Warm paper, flat colour, no effects. The whole system rests on one move:
+   full-bleed bands of flat pastel, each section sitting in its own colour,
+   with white cards floating on top and the caption printed underneath in
+   plain ink.
+
+   Three rules:
+     1. Colour arrives as large flat areas, never as gradient or glow.
+     2. Artwork always sits on a white card; the band colour never touches it.
+     3. A caption is type on the background, not a label stuck to the card.
    =========================================================================== */
 
 @theme {
-  /* brand - grape */
-  --color-grape-50: #f5f1ff;
-  --color-grape-100: #ece4ff;
-  --color-grape-200: #dbcdff;
-  --color-grape-300: #c0a6ff;
-  --color-grape-400: #a274fc;
-  --color-grape-500: #8b4ff5;
-  --color-grape-600: #7c2fe8;
-  --color-grape-700: #6a20cc;
-  --color-grape-800: #581ca6;
-  --color-grape-900: #491a85;
+  /* paper */
+  --color-cream: #f9f6f3;
+  --color-cream-deep: #f0eae4;
+  --color-sand: #e8ddd0;
+  --color-ink: #1c1c1c;
+  --color-ink-soft: #5c5750;
 
-  /* crayon accents */
-  --color-sunny: #ffc83d;
-  --color-sunny-dark: #e8a800;
-  --color-coral: #ff6b81;
-  --color-coral-dark: #e8415c;
-  --color-mint: #34d399;
-  --color-mint-dark: #10b981;
-  --color-sky: #38bdf8;
-  --color-sky-dark: #0ea5e9;
-  --color-tangerine: #ff8a3d;
-  --color-tangerine-dark: #f26a0f;
-  --color-bubblegum: #f472b6;
-  --color-lime: #a3e635;
+  /* the one accent that asks to be clicked */
+  --color-coral: #f27979;
+  --color-coral-dark: #e05c5c;
 
-  /* surfaces */
-  --color-cream: #fff8ef;
-  --color-cream-deep: #fdeedd;
-  --color-ink: #2b2140;
-  --color-ink-soft: #5b5173;
+  /* band pastels */
+  --color-mint: #91dbb7;
+  --color-mint-dark: #2f7d5a;
+  --color-blush: #f0bbbb;
+  --color-blush-dark: #a63d3d;
+  --color-lilac: #d1bbf0;
+  --color-lilac-dark: #6b3fa0;
+  --color-sky: #a3ddf0;
+  --color-sky-dark: #1f6f8f;
+  --color-butter: #f0dfa3;
+  --color-butter-dark: #8a6d1f;
+  --color-peach: #f7c9a3;
+  --color-peach-dark: #a65a28;
+
+  /* names the rest of the app still refers to */
+  --color-sunny: #f0dfa3;
+  --color-sunny-dark: #8a6d1f;
+  --color-tangerine: #f7c9a3;
+  --color-tangerine-dark: #a65a28;
+  --color-bubblegum: #f0bbbb;
+  --color-lime: #91dbb7;
+
+  /* grape kept as a neutral violet ramp for the admin and focus states */
+  --color-grape-50: #f6f2fb;
+  --color-grape-100: #ece4f7;
+  --color-grape-200: #ddcdf0;
+  --color-grape-300: #d1bbf0;
+  --color-grape-400: #b48ee4;
+  --color-grape-500: #9466d4;
+  --color-grape-600: #7c4ec0;
+  --color-grape-700: #6b3fa0;
+  --color-grape-800: #573285;
+  --color-grape-900: #47286e;
 
   /* type */
-  --font-display: var(--font-baloo), 'Baloo 2', 'Comic Sans MS', system-ui, sans-serif;
-  --font-sans: var(--font-nunito), 'Nunito', system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-chango), 'Chango', 'Baloo 2', system-ui, sans-serif;
+  --font-sans: var(--font-rubik), 'Rubik', system-ui, -apple-system, sans-serif;
 
-  /* chunky, toy-like radii */
+  /* geometry - modest and consistent */
+  --radius-card: 1rem;
+  --radius-btn: 0.75rem;
   --radius-blob: 2.5rem;
+
+  /* the only shadow in the system, and it barely shows */
+  --shadow-card: 0 2px 10px rgb(28 28 28 / 0.06);
+  --shadow-card-lift: 0 10px 24px -8px rgb(28 28 28 / 0.16);
 
   /* motion */
   --animate-float: float 6s ease-in-out infinite;
@@ -116,7 +147,10 @@
 @layer base {
   :root {
     color-scheme: light;
-    --nav-h: 4.25rem;
+    --nav-h: 4.75rem;
+    /* Set by a section to tint everything inside it. */
+    --band: var(--color-cream);
+    --band-ink: var(--color-ink);
   }
 
   * {
@@ -126,13 +160,14 @@
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    background-color: var(--color-cream);
   }
 
   body {
     background-color: var(--color-cream);
     color: var(--color-ink);
     font-family: var(--font-sans);
-    font-weight: 600;
+    font-weight: 400;
     overflow-x: hidden;
   }
 
@@ -142,24 +177,29 @@
   h4,
   .font-display {
     font-family: var(--font-display);
-    font-weight: 800;
-    letter-spacing: -0.015em;
-    line-height: 1.08;
+    font-weight: 400;
+    letter-spacing: 0.005em;
+    line-height: 1.1;
+  }
+
+  /* Rubik carries the UI, so it needs a little more weight than body copy. */
+  button,
+  label,
+  th {
+    font-weight: 500;
   }
 
   ::selection {
-    background: var(--color-grape-200);
-    color: var(--color-grape-900);
+    background: var(--color-coral);
+    color: #fff;
   }
 
-  /* Visible, chunky focus ring - kids and keyboard users both benefit. */
   :focus-visible {
-    outline: 3px solid var(--color-grape-500);
+    outline: 2px solid var(--color-ink);
     outline-offset: 3px;
     border-radius: 0.5rem;
   }
 
-  /* Playful scrollbar on desktop */
   @media (pointer: fine) {
     ::-webkit-scrollbar {
       width: 12px;
@@ -169,12 +209,12 @@
       background: var(--color-cream-deep);
     }
     ::-webkit-scrollbar-thumb {
-      background: var(--color-grape-300);
+      background: #cfc4b6;
       border: 3px solid var(--color-cream-deep);
       border-radius: 999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: var(--color-grape-400);
+      background: #b9ab99;
     }
   }
 
@@ -195,133 +235,157 @@
    =========================================================================== */
 
 @layer components {
-  /* Chunky 3D "toy" button: a solid bottom edge that collapses on press. */
+  /* -------------------------------------------------------------------------
+     Bands
+
+     A section paints itself edge to edge in one flat pastel and sets --band /
+     --band-ink, which the heading and anything else inside it reads. This is
+     the backbone of the layout: scrolling the page is scrolling through
+     colours, and every card reads as white paper laid on top.
+     ---------------------------------------------------------------------- */
+  .band {
+    position: relative;
+    background: var(--band);
+  }
+
+  /* Breaks a section out of its container to the full viewport width. */
+  .band-full {
+    margin-inline: calc(50% - 50vw);
+    padding-inline: calc(50vw - 50%);
+  }
+
+  /* -------------------------------------------------------------------------
+     Buttons - flat fill, small radius, no shine
+     ---------------------------------------------------------------------- */
   .btn-kid {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     font-family: var(--font-display);
-    font-weight: 800;
-    border-radius: 1.25rem;
-    padding: 0.8rem 1.5rem;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    border-radius: var(--radius-btn);
+    padding: 0.85rem 1.6rem;
     color: #fff;
-    background: var(--color-grape-500);
-    box-shadow: 0 6px 0 var(--color-grape-700);
+    background: var(--color-coral);
+    border: 2px solid transparent;
     transition:
-      transform 0.12s ease,
-      box-shadow 0.12s ease,
-      filter 0.12s ease;
+      background-color 0.16s ease,
+      color 0.16s ease,
+      transform 0.16s ease;
     cursor: pointer;
     user-select: none;
     touch-action: manipulation;
   }
 
   .btn-kid:hover {
-    filter: brightness(1.06);
+    background: var(--color-coral-dark);
   }
 
   .btn-kid:active {
-    transform: translateY(5px);
-    box-shadow: 0 1px 0 var(--color-grape-700);
+    transform: translateY(1px);
   }
 
   .btn-kid:disabled {
-    opacity: 0.5;
+    opacity: 0.45;
     pointer-events: none;
   }
 
   .btn-sunny {
-    background: var(--color-sunny);
-    color: var(--color-ink);
-    box-shadow: 0 6px 0 var(--color-sunny-dark);
+    background: var(--color-butter);
+    color: var(--color-butter-dark);
   }
-  .btn-sunny:active {
-    box-shadow: 0 1px 0 var(--color-sunny-dark);
+  .btn-sunny:hover {
+    background: #e7d184;
   }
 
   .btn-coral {
     background: var(--color-coral);
-    box-shadow: 0 6px 0 var(--color-coral-dark);
   }
-  .btn-coral:active {
-    box-shadow: 0 1px 0 var(--color-coral-dark);
+  .btn-coral:hover {
+    background: var(--color-coral-dark);
   }
 
   .btn-mint {
     background: var(--color-mint);
-    box-shadow: 0 6px 0 var(--color-mint-dark);
+    color: var(--color-mint-dark);
   }
-  .btn-mint:active {
-    box-shadow: 0 1px 0 var(--color-mint-dark);
+  .btn-mint:hover {
+    background: #79cea4;
   }
 
   .btn-sky {
     background: var(--color-sky);
-    box-shadow: 0 6px 0 var(--color-sky-dark);
+    color: var(--color-sky-dark);
   }
-  .btn-sky:active {
-    box-shadow: 0 1px 0 var(--color-sky-dark);
+  .btn-sky:hover {
+    background: #85cfe8;
   }
 
+  /* Outlined, so it can sit on cream or on any band without a fill clash. */
   .btn-ghost {
-    background: #fff;
+    background: transparent;
     color: var(--color-ink);
-    box-shadow:
-      0 6px 0 var(--color-cream-deep),
-      inset 0 0 0 2px var(--color-cream-deep);
-  }
-  .btn-ghost:active {
-    box-shadow:
-      0 1px 0 var(--color-cream-deep),
-      inset 0 0 0 2px var(--color-cream-deep);
+    border-color: var(--color-ink);
   }
 
-  /* Card with the same solid-edge trick */
-  .card-kid {
+  .btn-ghost:hover {
+    background: var(--color-ink);
+    color: var(--color-cream);
+  }
+
+  /* -------------------------------------------------------------------------
+     Cards
+
+     `.glass` is kept as a name because half the app asks for it, but there is
+     no glass in this system any more - it is plain white paper.
+     ---------------------------------------------------------------------- */
+  .card-kid,
+  .glass {
+    position: relative;
     background: #fff;
-    border-radius: 1.75rem;
-    box-shadow:
-      0 6px 0 rgb(43 33 64 / 0.07),
-      0 14px 30px -18px rgb(43 33 64 / 0.3);
+    border: 1px solid rgb(28 28 28 / 0.07);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
     transition:
       transform 0.18s ease,
       box-shadow 0.18s ease;
   }
 
-  .card-hover:hover {
-    transform: translateY(-6px) rotate(-0.6deg);
-    box-shadow:
-      0 12px 0 rgb(43 33 64 / 0.07),
-      0 24px 40px -20px rgb(43 33 64 / 0.35);
+  .glass-strong {
+    background: #fff;
   }
 
-  /* Dotted paper texture used behind hero sections */
+  .glass-soft {
+    background: var(--color-cream);
+  }
+
+  .glass-hover:hover,
+  .card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-card-lift);
+  }
+
   .dotted {
-    background-image: radial-gradient(circle, rgb(139 79 245 / 0.14) 1.5px, transparent 1.5px);
-    background-size: 22px 22px;
+    background-image: radial-gradient(circle, rgb(28 28 28 / 0.07) 1px, transparent 1px);
+    background-size: 26px 26px;
   }
 
   .stripey {
     background-image: repeating-linear-gradient(
-      45deg,
-      rgb(255 255 255 / 0.5) 0 12px,
-      transparent 12px 24px
+      115deg,
+      rgb(28 28 28 / 0.04) 0 1px,
+      transparent 1px 18px
     );
   }
 
   .skeleton {
-    background: linear-gradient(
-      90deg,
-      var(--color-cream-deep) 25%,
-      #fff 50%,
-      var(--color-cream-deep) 75%
-    );
+    background: linear-gradient(90deg, var(--color-cream-deep) 25%, #fff 50%, var(--color-cream-deep) 75%);
     background-size: 200% 100%;
     animation: var(--animate-shimmer);
   }
 
-  /* Hide scrollbars on the horizontal category rail */
   .no-scrollbar {
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -329,11 +393,119 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
+  /* -------------------------------------------------------------------------
+     Artwork cards
+
+     The card is the white sheet; the caption is type printed on the band
+     below it. So .frame-card itself is just a column with no skin of its own,
+     .frame-media is the sheet, and .frame-label is plain text. Keeping the
+     old class names means every grid in the app picks this up untouched.
+     ---------------------------------------------------------------------- */
+  .frame-card {
+    --frame: var(--color-ink);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    border: 0;
+  }
+
+  /* The white sheet. Artwork never touches the band colour. */
+  .frame-media {
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+
+  .frame-card:hover .frame-media {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-card-lift);
+  }
+
+  /* Caption: ink on the band, centred under the sheet. */
+  .frame-label {
+    margin-top: auto;
+    padding: 0.7rem 0.25rem 0;
+    background: none;
+    color: var(--band-ink, var(--color-ink));
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.9rem;
+    line-height: 1.35;
+    text-align: center;
+  }
+
+  /* Small count/level note, printed on the sheet's own corner. */
+  .frame-tag {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.6rem;
+    z-index: 1;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.66rem;
+    letter-spacing: 0.02em;
+    color: rgb(28 28 28 / 0.4);
+  }
+
+  /* -------------------------------------------------------------------------
+     Page furniture
+     ---------------------------------------------------------------------- */
+
+  .topbar {
+    background: var(--color-ink);
+    color: var(--color-cream);
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.74rem;
+    letter-spacing: 0.01em;
+    text-align: center;
+    padding: 0.45rem 1rem;
+  }
+
+  .crumbs {
+    background: transparent;
+    color: var(--color-ink-soft);
+    font-weight: 400;
+    font-size: 0.82rem;
+  }
+
+  .crumbs a {
+    color: var(--color-ink-soft);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgb(28 28 28 / 0.25);
+    transition: color 0.15s ease;
+  }
+
+  .crumbs a:hover {
+    color: var(--color-ink);
+  }
+
+  /* The big chunky section heading, in the band's own dark tone. */
+  .band-title {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 400;
+    color: var(--band-ink, var(--color-ink));
+    letter-spacing: 0.01em;
+  }
 }
 
 /* ===========================================================================
    Utilities
    =========================================================================== */
+
+/* Was a gradient; now simply the accent. Kept so call sites need no edit. */
+@utility text-aurora {
+  color: var(--color-coral);
+}
 
 @utility text-outline {
   -webkit-text-stroke: 2px var(--color-ink);
@@ -345,7 +517,10 @@
   min-width: 2.75rem;
 }
 
-/* Checkerboard behind the coloring canvas, so white paint is still visible */
+@utility glow {
+  box-shadow: var(--shadow-card);
+}
+
 @utility canvas-checker {
   background-image:
     linear-gradient(45deg, #eee 25%, transparent 25%),

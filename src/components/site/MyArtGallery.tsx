@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
-import { Download, Loader2, Trash2 } from 'lucide-react';
+import { Download, Images, Loader2, Star, Trash2 } from 'lucide-react';
 import {
   BADGES,
   deleteArtwork,
@@ -68,12 +68,13 @@ export function MyArtGallery() {
         <section className="card-kid mb-8 p-5" aria-label="Badges">
           <div className="flex flex-wrap items-center gap-4">
             <div>
-              <p className="font-display text-2xl font-extrabold text-grape-700">
-                ⭐ {rewards.stars} stars
+              <p className="flex items-center gap-1.5 font-display text-2xl font-extrabold text-grape-700">
+                <Star className="size-6 fill-sunny text-sunny" aria-hidden />
+                {rewards.stars} stars
               </p>
               <p className="text-xs font-bold text-ink-soft">
                 {rewards.finished.length} finished
-                {rewards.streakDays > 1 && ` · ${rewards.streakDays}-day streak 🔥`}
+                {rewards.streakDays > 1 && ` · ${rewards.streakDays}-day streak`}
               </p>
             </div>
 
@@ -85,12 +86,12 @@ export function MyArtGallery() {
                     key={badge.id}
                     className={cn(
                       'flex items-center gap-2 rounded-2xl px-3 py-2 text-sm font-extrabold',
-                      has ? 'bg-sunny/20 text-ink' : 'bg-cream-deep text-ink-soft/40 grayscale',
+                      has
+                        ? 'border border-sunny/45 bg-sunny/20 text-ink'
+                        : 'border border-ink/10 bg-white text-ink-soft/40 grayscale',
                     )}
                   >
-                    <span aria-hidden className="text-lg">
-                      {badge.emoji}
-                    </span>
+                    <badge.icon className="size-4" aria-hidden />
                     <span className="hidden sm:inline">{badge.label}</span>
                   </li>
                 );
@@ -101,8 +102,7 @@ export function MyArtGallery() {
           {next && (
             <p className="mt-3 text-xs font-bold text-ink-soft">
               Finish {next.need - rewards.finished.length} more page
-              {next.need - rewards.finished.length === 1 ? '' : 's'} to unlock {next.emoji}{' '}
-              {next.label}.
+              {next.need - rewards.finished.length === 1 ? '' : 's'} to unlock {next.label}.
             </p>
           )}
         </section>
@@ -110,9 +110,12 @@ export function MyArtGallery() {
 
       {entries.length === 0 ? (
         <div className="card-kid mx-auto max-w-lg px-6 py-12 text-center">
-          <p aria-hidden className="text-6xl animate-bob">
-            🖼️
-          </p>
+          <span
+            aria-hidden
+            className="mx-auto grid size-16 place-items-center rounded-xl bg-grape-50 text-grape-400"
+          >
+            <Images className="size-8" />
+          </span>
           <h2 className="mt-3 font-display text-xl font-extrabold text-ink">
             Your sticker book is empty
           </h2>

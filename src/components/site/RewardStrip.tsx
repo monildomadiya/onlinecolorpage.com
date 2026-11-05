@@ -2,7 +2,14 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { BADGES, earnedBadges, nextBadge, readRewards, type Rewards } from '@/components/coloring/storage';
+import { Medal } from 'lucide-react';
+import {
+  BADGES,
+  earnedBadges,
+  nextBadge,
+  readRewards,
+  type Rewards,
+} from '@/components/coloring/storage';
 import { cn } from '@/lib/utils';
 
 /**
@@ -21,22 +28,23 @@ export function RewardStrip({ className }: { className?: string }) {
 
   const earned = earnedBadges(rewards);
   const next = nextBadge(rewards);
-  const progress = next
-    ? Math.round((rewards.finished.length / next.need) * 100)
-    : 100;
+  const progress = next ? Math.round((rewards.finished.length / next.need) * 100) : 100;
 
   return (
     <section
       aria-label="Your rewards"
       className={cn(
-        'mt-8 overflow-hidden rounded-[2rem] bg-gradient-to-r from-sunny/25 via-coral/15 to-grape-100 p-5',
+        'glass mt-10 overflow-hidden rounded-[2rem] bg-gradient-to-r from-sunny/20 via-coral/12 to-grape-300/25 p-5',
         className,
       )}
     >
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-3">
-          <span aria-hidden className="text-4xl animate-bob">
-            🏅
+          <span
+            aria-hidden
+            className="grid size-11 shrink-0 place-items-center rounded-2xl border border-ink/10 bg-butter text-white"
+          >
+            <Medal className="size-6" />
           </span>
           <div>
             <p className="font-display text-lg leading-tight font-extrabold text-ink">
@@ -44,7 +52,7 @@ export function RewardStrip({ className }: { className?: string }) {
             </p>
             <p className="text-xs font-bold text-ink-soft">
               {rewards.finished.length} page{rewards.finished.length === 1 ? '' : 's'} finished
-              {rewards.streakDays > 1 && ` · ${rewards.streakDays}-day streak 🔥`}
+              {rewards.streakDays > 1 && ` · ${rewards.streakDays}-day streak`}
             </p>
           </div>
         </div>
@@ -57,11 +65,11 @@ export function RewardStrip({ className }: { className?: string }) {
                 key={badge.id}
                 title={has ? badge.label : `${badge.label} - finish ${badge.need} pages`}
                 className={cn(
-                  'grid size-10 place-items-center rounded-2xl text-xl transition',
-                  has ? 'bg-white shadow-sm' : 'bg-white/40 opacity-40 grayscale',
+                  'grid size-10 place-items-center rounded-2xl border transition',
+                  has ? 'border-ink/10 bg-white' : 'border-ink/10 bg-white opacity-40 grayscale',
                 )}
               >
-                <span aria-hidden>{badge.emoji}</span>
+                <badge.icon className="size-5" aria-hidden />
                 <span className="sr-only">
                   {badge.label}: {has ? 'unlocked' : 'locked'}
                 </span>
@@ -72,7 +80,7 @@ export function RewardStrip({ className }: { className?: string }) {
 
         <Link
           href="/my-art"
-          className="ml-auto rounded-xl bg-white px-4 py-2.5 font-display text-sm font-extrabold text-grape-700 shadow-[0_4px_0_rgba(43,33,64,0.08)]"
+          className="ml-auto rounded-full border border-ink/10 bg-white px-4 py-2.5 font-display text-sm font-extrabold text-grape-700 transition hover:-translate-y-0.5 hover:bg-cream-deep"
         >
           My sticker book →
         </Link>
@@ -81,16 +89,14 @@ export function RewardStrip({ className }: { className?: string }) {
       {next && (
         <div className="mt-4">
           <div className="flex items-center justify-between text-xs font-extrabold text-ink-soft">
-            <span>
-              Next badge: {next.emoji} {next.label}
-            </span>
+            <span>Next badge: {next.label}</span>
             <span>
               {rewards.finished.length}/{next.need}
             </span>
           </div>
-          <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-white/70">
+          <div className="mt-1.5 h-2.5 overflow-hidden rounded-full border border-ink/10 bg-white">
             <div
-              className="h-full rounded-full bg-grape-500 transition-[width] duration-700"
+              className="h-full rounded-full bg-coral shadow-[0_0_12px_rgb(139_79_245_/_0.6)] transition-[width] duration-700"
               style={{ width: `${Math.max(progress, 4)}%` }}
             />
           </div>

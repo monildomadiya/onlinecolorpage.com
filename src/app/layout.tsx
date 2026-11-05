@@ -1,21 +1,21 @@
 import type { Metadata, Viewport } from 'next';
-import { Baloo_2, Nunito } from 'next/font/google';
+import { Chango, Rubik } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { buildRootMetadata } from '@/lib/seo/metadata';
 import { publicEnv } from '@/lib/env';
 
-const baloo = Baloo_2({
+const chango = Chango({
   subsets: ['latin'],
-  weight: ['500', '600', '700', '800'],
-  variable: '--font-baloo',
+  weight: ['400'],
+  variable: '--font-chango',
   display: 'swap',
 });
 
-const nunito = Nunito({
+const rubik = Rubik({
   subsets: ['latin'],
-  weight: ['400', '600', '700', '800'],
-  variable: '--font-nunito',
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-rubik',
   display: 'swap',
 });
 
@@ -28,13 +28,13 @@ export const viewport: Viewport = {
   initialScale: 1,
   // Kids pinch-zoom the canvas, so zooming must stay available.
   maximumScale: 5,
-  themeColor: '#8b4ff5',
+  themeColor: '#f9f6f3',
   colorScheme: 'light',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${baloo.variable} ${nunito.variable}`}>
+    <html lang="en" className={`${chango.variable} ${rubik.variable}`}>
       <head>
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>

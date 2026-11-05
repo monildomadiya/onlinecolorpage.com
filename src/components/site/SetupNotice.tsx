@@ -5,7 +5,7 @@ import { isR2Configured, isSupabaseConfigured } from '@/lib/env';
  * itself instead of looking broken.
  *
  * It renders in development only. A visitor to the live site has no use for
- * "copy .env.example", and showing them the repo's internals would be a leak
+ *"copy .env.example", and showing them the repo's internals would be a leak
  * as much as an eyesore - on a deployment the owner hears about missing
  * configuration from `/api/health`, `npm run check` and the admin panel.
  */
@@ -19,7 +19,9 @@ export function SetupNotice() {
     );
   }
   if (!isR2Configured) {
-    steps.push('Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY and R2_BUCKET in .env.local.');
+    steps.push(
+      'Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY and R2_BUCKET in .env.local.',
+    );
   }
 
   if (steps.length === 0) return null;
@@ -31,7 +33,7 @@ export function SetupNotice() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <div className="card-kid border-4 border-sunny p-6">
+      <div className="card-kid border-sunny/60 p-6">
         <h2 className="font-display text-xl font-extrabold text-ink">Not configured yet</h2>
         <p className="mt-1 text-sm font-semibold text-ink-soft">
           Still waiting on: <strong>{missing.join(' and ')}</strong>. This panel only ever shows in
@@ -42,8 +44,11 @@ export function SetupNotice() {
             <li key={step}>{step}</li>
           ))}
           <li>
-            Run <code className="rounded bg-cream-deep px-1.5 py-0.5">npm run check</code> to verify
-            the lot.
+            Run{' '}
+            <code className="rounded-md border border-ink/10 bg-white px-1.5 py-0.5">
+              npm run check
+            </code>{' '}
+            to verify the lot.
           </li>
         </ol>
         <p className="mt-3 text-xs font-bold text-ink-soft/70">

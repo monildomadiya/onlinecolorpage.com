@@ -1,3 +1,4 @@
+import { Flame } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getPages } from '@/lib/queries';
 import { PageGrid } from '@/components/site/PageGrid';
@@ -38,7 +39,7 @@ export default async function PopularRoute({ searchParams }: Props) {
 
       <header className="mb-6">
         <h1 className="font-display text-3xl font-extrabold text-ink sm:text-4xl">
-          🔥 Most loved coloring pages
+          Most loved coloring pages
         </h1>
         <p className="mt-2 max-w-2xl text-sm font-semibold text-ink-soft sm:text-base">
           The pages kids come back to again and again. Ranked by how many times they have been
@@ -50,7 +51,7 @@ export default async function PopularRoute({ searchParams }: Props) {
 
       {result.items.length === 0 ? (
         <EmptyState
-          emoji="🔥"
+          icon={Flame}
           title="No favourites yet"
           message="Once pages start getting coloured, the most popular ones will show up here."
           action={

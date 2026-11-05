@@ -1,9 +1,18 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Download, Eye, Loader2, PartyPopper, Printer, Share2, Sparkles } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  CircleAlert,
+  Download,
+  Eye,
+  Loader2,
+  PartyPopper,
+  Printer,
+  Share2,
+  Sparkles,
+} from 'lucide-react';
 import { useColoringEngine } from './useColoringEngine';
-import { Palette, PaletteStrip } from './Palette';
+import { Palette, PaletteColumn, PaletteStrip } from './Palette';
 import { MobileDock, Toolbar } from './Toolbar';
 import { StickerTray } from './StickerTray';
 import { FinishCard } from './Celebration';
@@ -68,6 +77,9 @@ export function ColoringStudio({
   });
 
   const [tab, setTab] = useState<Tab>('colors');
+  // The wide layout keeps colours in the left rail, so its sidebar only ever
+  // shows the other two trays and needs a tab of its own.
+  const [deskTab, setDeskTab] = useState<Exclude<Tab, 'colors'>>('tools');
   const [finished, setFinished] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [badge, setBadge] = useState<Badge | null>(null);
@@ -84,8 +96,13 @@ export function ColoringStudio({
 
   // Switch the side panel to match the tool the child just picked.
   useEffect(() => {
-    if (engine.tool === 'sticker') setTab('stickers');
-    else if (engine.tool === 'brush' || engine.tool === 'eraser') setTab('tools');
+    if (engine.tool === 'sticker') {
+      setTab('stickers');
+      setDeskTab('stickers');
+    } else if (engine.tool === 'brush' || engine.tool === 'eraser') {
+      setTab('tools');
+      setDeskTab('tools');
+    }
   }, [engine.tool]);
 
   const download = useCallback(async () => {
@@ -168,109 +185,135 @@ export function ColoringStudio({
 
   const progress = Math.min(100, Math.round(engine.coverage * 100));
 
-  const panel = useMemo(
-    () => (
-      <>
-        <div className="mb-3 grid grid-cols-3 gap-1.5 rounded-2xl bg-cream p-1.5">
-          {(
-            [
-              ['colors', '🎨 Colours'],
-              ['tools', '🛠️ Tools'],
-              ['stickers', '🌟 Stickers'],
-            ] as const
-          ).map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setTab(id)}
-              aria-pressed={tab === id}
-              className={cn(
-                'rounded-xl px-2 py-2 font-display text-xs font-extrabold transition',
-                tab === id ? 'bg-white text-grape-700 shadow-sm' : 'text-ink-soft hover:text-ink',
-              )}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+  const toolsTray = (
+    <Toolbar
+      tool={engine.tool}
+      onTool={engine.setTool}
+      brush={engine.brush}
+      onBrush={engine.setBrush}
+      brushSize={engine.brushSize}
+      onBrushSize={engine.setBrushSize}
+      canUndo={engine.canUndo}
+      canRedo={engine.canRedo}
+      onUndo={engine.undo}
+      onRedo={engine.redo}
+      onReset={engine.reset}
+      sound={engine.sound}
+      onSound={engine.setSound}
+      zoom={engine.view.z}
+      onZoomIn={engine.zoomIn}
+      onZoomOut={engine.zoomOut}
+      onResetView={engine.resetView}
+    />
+  );
 
-        {tab === 'colors' && (
-          <Palette
-            color={engine.color}
-            onPick={engine.setColor}
-            suggested={suggestedColors}
-            eyedropper={engine.eyedropper}
-            onToggleEyedropper={() => engine.setEyedropper(!engine.eyedropper)}
-          />
-        )}
+  const stickersTray = (
+    <StickerTray
+      sticker={engine.sticker}
+      onSticker={engine.setSticker}
+      size={engine.stickerSize}
+      onSize={engine.setStickerSize}
+    />
+  );
 
-        {tab === 'tools' && (
-          <Toolbar
-            tool={engine.tool}
-            onTool={engine.setTool}
-            brush={engine.brush}
-            onBrush={engine.setBrush}
-            brushSize={engine.brushSize}
-            onBrushSize={engine.setBrushSize}
-            canUndo={engine.canUndo}
-            canRedo={engine.canRedo}
-            onUndo={engine.undo}
-            onRedo={engine.redo}
-            onReset={engine.reset}
-            sound={engine.sound}
-            onSound={engine.setSound}
-            zoom={engine.view.z}
-            onZoomIn={engine.zoomIn}
-            onZoomOut={engine.zoomOut}
-            onResetView={engine.resetView}
-          />
-        )}
+  const guideCard = guideEnabled && engine.hasReference && (
+    <div className="mt-4 rounded-2xl border border-sky/45 bg-sky/12 p-3">
+      <label
+        htmlFor="guide-slider"
+        className="flex items-center gap-1.5 font-display text-[11px] font-extrabold tracking-wide text-ink-soft uppercase"
+      >
+        <Eye className="size-3.5" aria-hidden /> Guide peek
+      </label>
+      <input
+        id="guide-slider"
+        type="range"
+        min={0}
+        max={70}
+        step={5}
+        value={engine.guide}
+        onChange={(e) => engine.setGuide(Number(e.target.value))}
+        className="mt-2 w-full accent-sky-dark"
+      />
+      <p className="mt-1 text-[11px] font-bold text-ink-soft">
+        Slide to peek at the suggested colours.
+      </p>
+    </div>
+  );
 
-        {tab === 'stickers' && (
-          <StickerTray
-            sticker={engine.sticker}
-            onSticker={engine.setSticker}
-            size={engine.stickerSize}
-            onSize={engine.setStickerSize}
-          />
+  function tabButton<T extends string>(id: T, label: string, active: T, set: (value: T) => void) {
+    return (
+      <button
+        key={id}
+        type="button"
+        onClick={() => set(id)}
+        aria-pressed={active === id}
+        className={cn(
+          'rounded-xl px-2 py-2 font-display text-xs font-extrabold transition',
+          active === id
+            ? 'border border-ink/10 bg-white text-grape-700'
+            : 'border border-transparent text-ink-soft hover:text-ink',
         )}
+      >
+        {label}
+      </button>
+    );
+  }
 
-        {guideEnabled && engine.hasReference && (
-          <div className="mt-4 rounded-2xl bg-sky/10 p-3">
-            <label
-              htmlFor="guide-slider"
-              className="flex items-center gap-1.5 font-display text-[11px] font-extrabold tracking-wide text-ink-soft uppercase"
-            >
-              <Eye className="size-3.5" aria-hidden /> Guide peek
-            </label>
-            <input
-              id="guide-slider"
-              type="range"
-              min={0}
-              max={70}
-              step={5}
-              value={engine.guide}
-              onChange={(e) => engine.setGuide(Number(e.target.value))}
-              className="mt-2 w-full accent-sky-dark"
-            />
-            <p className="mt-1 text-[11px] font-bold text-ink-soft">
-              Slide to peek at the suggested colours.
-            </p>
-          </div>
-        )}
-      </>
-    ),
-    [engine, guideEnabled, suggestedColors, tab],
+  /** Sidebar for the wide layout: colours live in the left rail instead. */
+  const deskPanel = (
+    <>
+      <div className="mb-3 grid grid-cols-2 gap-1.5 rounded-2xl border border-ink/10 bg-white p-1.5 shadow-[inset_0_1px_3px_rgb(60_36_120_/_0.08)]">
+        {tabButton('tools', 'Tools', deskTab, setDeskTab)}
+        {tabButton('stickers', 'Stickers', deskTab, setDeskTab)}
+      </div>
+
+      {deskTab === 'tools' ? toolsTray : stickersTray}
+      {guideCard}
+    </>
+  );
+
+  /** Phone layout: one panel, all three trays. */
+  const mobilePanel = (
+    <>
+      <div className="mb-3 grid grid-cols-3 gap-1.5 rounded-2xl border border-ink/10 bg-white p-1.5 shadow-[inset_0_1px_3px_rgb(60_36_120_/_0.08)]">
+        {tabButton('colors', 'Colours', tab, setTab)}
+        {tabButton('tools', 'Tools', tab, setTab)}
+        {tabButton('stickers', 'Stickers', tab, setTab)}
+      </div>
+
+      {tab === 'colors' && (
+        <Palette
+          color={engine.color}
+          onPick={engine.setColor}
+          suggested={suggestedColors}
+          eyedropper={engine.eyedropper}
+          onToggleEyedropper={() => engine.setEyedropper(!engine.eyedropper)}
+        />
+      )}
+      {tab === 'tools' && toolsTray}
+      {tab === 'stickers' && stickersTray}
+      {guideCard}
+    </>
   );
 
   return (
     <>
-      <div className="no-print grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="no-print grid gap-4 lg:grid-cols-[5.5rem_minmax(0,1fr)_20rem]">
+        {/* ---------------- colour rail (wide screens) ---------------- */}
+        <PaletteColumn
+          color={engine.color}
+          onPick={engine.setColor}
+          suggested={suggestedColors}
+          eyedropper={engine.eyedropper}
+          onToggleEyedropper={() => engine.setEyedropper(!engine.eyedropper)}
+          className="hidden lg:sticky lg:top-24 lg:flex lg:max-h-[calc(100dvh-7rem)]"
+        />
+
         {/* ---------------- stage ---------------- */}
         <div className="min-w-0">
           <div
             ref={stageRef}
-            className="relative overflow-hidden rounded-[2rem] border-4 border-white bg-cream-deep shadow-[0_10px_0_rgba(43,33,64,0.08)]"
+            className="relative overflow-hidden rounded-2xl border border-sky/50 bg-white"
           >
             {engine.status === 'loading' && (
               <div className="grid aspect-[4/3] place-items-center">
@@ -286,9 +329,7 @@ export function ColoringStudio({
             {engine.status === 'error' && (
               <div className="grid aspect-[4/3] place-items-center p-6 text-center">
                 <div>
-                  <p className="text-5xl" aria-hidden>
-                    😿
-                  </p>
+                  <CircleAlert className="mx-auto size-10 text-coral" aria-hidden />
                   <p className="mt-3 font-display text-lg font-extrabold text-ink">Oops!</p>
                   <p className="mt-1 text-sm font-bold text-ink-soft">{engine.error}</p>
                 </div>
@@ -345,7 +386,7 @@ export function ColoringStudio({
             </div>
 
             {engine.restored && engine.status === 'ready' && (
-              <div className="animate-pop absolute top-3 left-3 flex items-center gap-2 rounded-2xl bg-white/95 px-3 py-2 shadow-md">
+              <div className="animate-pop absolute top-3 left-3 flex items-center gap-2 rounded-2xl border border-ink/10 bg-white px-3 py-2">
                 <Sparkles className="size-4 text-sunny-dark" aria-hidden />
                 <span className="font-display text-xs font-extrabold text-ink">
                   We saved your work!
@@ -353,7 +394,7 @@ export function ColoringStudio({
                 <button
                   type="button"
                   onClick={engine.reset}
-                  className="rounded-lg bg-cream-deep px-2 py-1 font-display text-[11px] font-extrabold text-ink-soft hover:text-ink"
+                  className="rounded-full border border-ink/10 bg-white px-2.5 py-1 font-display text-[11px] font-extrabold text-ink-soft transition hover:bg-cream-deep hover:text-ink"
                 >
                   Start fresh
                 </button>
@@ -365,7 +406,7 @@ export function ColoringStudio({
           <div className="mt-4 space-y-3">
             <div className="flex items-center gap-3">
               <div
-                className="h-3 flex-1 overflow-hidden rounded-full bg-white"
+                className="h-3 flex-1 overflow-hidden rounded-full border border-ink/10 bg-white shadow-[inset_0_1px_2px_rgb(60_36_120_/_0.12)]"
                 role="progressbar"
                 aria-valuenow={progress}
                 aria-valuemin={0}
@@ -441,18 +482,36 @@ export function ColoringStudio({
         </div>
 
         {/* ---------------- side panel (desktop) ---------------- */}
-        <aside className="card-kid hidden h-fit p-4 lg:sticky lg:top-24 lg:block">{panel}</aside>
+        <aside className="hidden h-fit lg:sticky lg:top-24 lg:block">
+          <div className="glass p-4">{deskPanel}</div>
+
+          <ol className="glass mt-4 space-y-2 border-sunny/50 p-4 text-xs leading-relaxed font-semibold text-ink-soft">
+            <li className="flex gap-2">
+              <span className="font-display font-extrabold text-sunny-dark">1.</span>
+              Pick a colour from the strip on the left, then tap inside the picture to fill that
+              shape.
+            </li>
+            <li className="flex gap-2">
+              <span className="font-display font-extrabold text-sunny-dark">2.</span>
+              Switch to Draw for freehand lines, or Erase to take a colour back off.
+            </li>
+            <li className="flex gap-2">
+              <span className="font-display font-extrabold text-sunny-dark">3.</span>
+              Save a PNG to keep it, or print the page and finish it with real crayons.
+            </li>
+          </ol>
+        </aside>
 
         {/* ---------------- mobile controls ---------------- */}
         <div className="lg:hidden">
-          <div className="card-kid mb-3 p-2">
+          <div className="glass mb-3 border-sky/45 p-2">
             <PaletteStrip
               color={engine.color}
               onPick={engine.setColor}
               suggested={suggestedColors}
             />
           </div>
-          <div className="card-kid p-4">{panel}</div>
+          <div className="glass p-4">{mobilePanel}</div>
         </div>
       </div>
 

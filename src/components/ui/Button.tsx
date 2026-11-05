@@ -13,10 +13,12 @@ const TONES: Record<ButtonTone, string> = {
   ghost: 'btn-kid btn-ghost',
 };
 
+// Radius stays on the pill set by .btn-kid at every size - a capsule that
+// changes shape as it grows reads as two different components.
 const SIZES: Record<ButtonSize, string> = {
-  sm: 'text-sm px-4 py-2 rounded-xl',
+  sm: 'text-sm px-4 py-2',
   md: 'text-base px-6 py-3',
-  lg: 'text-lg sm:text-xl px-8 py-4 rounded-[1.5rem]',
+  lg: 'text-lg sm:text-xl px-8 py-4',
 };
 
 interface BaseProps {

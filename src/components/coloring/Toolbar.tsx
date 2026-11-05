@@ -10,6 +10,7 @@ import {
   Undo2,
   Volume2,
   VolumeX,
+  type LucideIcon,
 } from 'lucide-react';
 import { BRUSHES, BRUSH_SIZES, TOOLS, type BrushId, type ToolId } from './constants';
 import { cn } from '@/lib/utils';
@@ -17,13 +18,13 @@ import { cn } from '@/lib/utils';
 function ToolButton({
   active,
   label,
-  emoji,
+  icon: Icon,
   onClick,
   hint,
 }: {
   active: boolean;
   label: string;
-  emoji: string;
+  icon: LucideIcon;
   onClick: () => void;
   hint?: string;
 }) {
@@ -34,15 +35,13 @@ function ToolButton({
       aria-pressed={active}
       title={hint ?? label}
       className={cn(
-        'flex min-w-16 flex-col items-center gap-0.5 rounded-2xl px-2.5 py-2 font-display text-[11px] font-extrabold transition',
+        'flex min-w-16 flex-col items-center gap-1 rounded-2xl border px-2.5 py-2.5 font-display text-[11px] font-extrabold transition-all duration-200',
         active
-          ? 'bg-grape-500 text-white shadow-[0_4px_0_var(--color-grape-700)]'
-          : 'bg-white text-ink-soft shadow-[0_4px_0_var(--color-cream-deep)] hover:bg-cream',
+          ? 'border-ink/10 bg-coral text-white'
+          : 'border-ink/10 bg-white text-ink-soft hover:-translate-y-0.5 hover:bg-cream-deep hover:text-ink',
       )}
     >
-      <span aria-hidden className="text-xl leading-none">
-        {emoji}
-      </span>
+      <Icon className="size-5" aria-hidden />
       {label}
     </button>
   );
@@ -69,10 +68,11 @@ function IconButton({
       title={label}
       aria-label={label}
       className={cn(
-        'tap-big grid place-items-center rounded-2xl transition disabled:opacity-35',
-        tone === 'danger' && 'bg-coral/15 text-coral-dark hover:bg-coral/25',
-        tone === 'active' && 'bg-grape-500 text-white',
-        tone === 'plain' && 'bg-white text-ink-soft shadow-[0_4px_0_var(--color-cream-deep)] hover:bg-cream',
+        'tap-big grid place-items-center rounded-2xl border transition disabled:opacity-35',
+        tone === 'danger' && 'border-coral/35 bg-coral/15 text-coral-dark hover:bg-coral/25',
+        tone === 'active' && 'border-ink/10 bg-coral text-white',
+        tone === 'plain' &&
+          'border-ink/10 bg-white text-ink-soft hover:-translate-y-0.5 hover:bg-cream-deep hover:text-ink',
       )}
     >
       {children}
@@ -124,12 +124,12 @@ export function Toolbar({
   return (
     <div className={cn('space-y-3', className)}>
       <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">
-        {TOOLS.map(({ id, label, emoji, key }) => (
+        {TOOLS.map(({ id, label, icon, key }) => (
           <ToolButton
             key={id}
             active={tool === id}
             label={label}
-            emoji={emoji}
+            icon={icon}
             hint={`${label} (${key.toUpperCase()})`}
             onClick={() => onTool(id)}
           />
@@ -137,7 +137,7 @@ export function Toolbar({
       </div>
 
       {showBrushes && (
-        <div className="animate-pop space-y-2 rounded-2xl bg-cream p-3">
+        <div className="animate-pop space-y-2 rounded-2xl border border-ink/10 bg-white p-3">
           <p className="font-display text-[11px] font-extrabold tracking-wide text-ink-soft uppercase">
             Brush style
           </p>
@@ -147,7 +147,7 @@ export function Toolbar({
                 key={item.id}
                 active={brush === item.id}
                 label={item.label}
-                emoji={item.emoji}
+                icon={item.icon}
                 hint={item.hint}
                 onClick={() => onBrush(item.id)}
               />
@@ -170,10 +170,10 @@ export function Toolbar({
                 aria-pressed={brushSize === size}
                 aria-label={`Size ${size}`}
                 className={cn(
-                  'tap-big grid place-items-center rounded-2xl transition',
+                  'tap-big grid place-items-center rounded-2xl border transition',
                   brushSize === size
-                    ? 'bg-grape-100 ring-2 ring-grape-500'
-                    : 'bg-white shadow-[0_3px_0_var(--color-cream-deep)] hover:bg-cream',
+                    ? 'border-grape-400/60 bg-grape-100/70'
+                    : 'border-ink/10 bg-white hover:bg-cream-deep',
                 )}
               >
                 <span
@@ -190,7 +190,7 @@ export function Toolbar({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-2 border-t-2 border-cream-deep pt-3">
+      <div className="flex flex-wrap items-center gap-2 border-t border-ink/10 pt-3.5">
         <IconButton onClick={onUndo} disabled={!canUndo} label="Undo (Ctrl+Z)">
           <Undo2 className="size-5" aria-hidden />
         </IconButton>
@@ -198,7 +198,7 @@ export function Toolbar({
           <Redo2 className="size-5" aria-hidden />
         </IconButton>
 
-        <span className="mx-1 h-8 w-px bg-cream-deep" aria-hidden />
+        <span className="mx-1 h-8 w-px bg-ink/10" aria-hidden />
 
         <IconButton onClick={onZoomOut} disabled={zoom <= 1} label="Zoom out">
           <Minus className="size-5" aria-hidden />
@@ -213,10 +213,17 @@ export function Toolbar({
           <Maximize className="size-5" aria-hidden />
         </IconButton>
 
-        <span className="mx-1 h-8 w-px bg-cream-deep" aria-hidden />
+        <span className="mx-1 h-8 w-px bg-ink/10" aria-hidden />
 
-        <IconButton onClick={() => onSound(!sound)} label={sound ? 'Mute sounds' : 'Turn sounds on'}>
-          {sound ? <Volume2 className="size-5" aria-hidden /> : <VolumeX className="size-5" aria-hidden />}
+        <IconButton
+          onClick={() => onSound(!sound)}
+          label={sound ? 'Mute sounds' : 'Turn sounds on'}
+        >
+          {sound ? (
+            <Volume2 className="size-5" aria-hidden />
+          ) : (
+            <VolumeX className="size-5" aria-hidden />
+          )}
         </IconButton>
 
         <IconButton onClick={onReset} label="Start over" tone="danger">
@@ -244,11 +251,11 @@ export function MobileDock({
   return (
     <div
       className={cn(
-        'flex items-center gap-2 rounded-3xl bg-white/95 p-2 shadow-[0_8px_24px_-8px_rgba(43,33,64,0.45)] backdrop-blur',
+        'flex items-center gap-2 rounded-[1.75rem] border border-ink/10 bg-white p-2',
         className,
       )}
     >
-      {TOOLS.filter((t) => t.id !== 'pan').map(({ id, label, emoji }) => (
+      {TOOLS.filter((t) => t.id !== 'pan').map(({ id, label, icon: Icon }) => (
         <button
           key={id}
           type="button"
@@ -256,11 +263,11 @@ export function MobileDock({
           aria-pressed={tool === id}
           aria-label={label}
           className={cn(
-            'tap-big grid flex-1 place-items-center rounded-2xl text-xl transition',
-            tool === id ? 'bg-grape-500 text-white' : 'bg-cream text-ink',
+            'tap-big grid flex-1 place-items-center rounded-2xl border transition',
+            tool === id ? 'border-ink/10 bg-coral text-white' : 'border-ink/10 bg-white text-ink',
           )}
         >
-          <span aria-hidden>{emoji}</span>
+          <Icon className="size-5" aria-hidden />
         </button>
       ))}
 
@@ -269,7 +276,7 @@ export function MobileDock({
         onClick={onUndo}
         disabled={!canUndo}
         aria-label="Undo"
-        className="tap-big grid place-items-center rounded-2xl bg-cream text-ink disabled:opacity-35"
+        className="tap-big grid place-items-center rounded-2xl border border-ink/10 bg-white text-ink transition hover:bg-cream-deep disabled:opacity-35"
       >
         <RotateCcw className="size-5" aria-hidden />
       </button>

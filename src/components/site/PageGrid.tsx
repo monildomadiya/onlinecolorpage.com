@@ -26,7 +26,7 @@ export function PageGrid({
     <>
       <div className={cn(GRID, className)}>
         {head.map((page, i) => (
-          <PageCard key={page.id} page={page} priority={i < priorityCount} />
+          <PageCard key={page.id} page={page} index={i} priority={i < priorityCount} />
         ))}
       </div>
 
@@ -34,8 +34,9 @@ export function PageGrid({
         <>
           <AdSlot slot="grid_inline" className="my-8" />
           <div className={cn(GRID, className)}>
-            {tail.map((page) => (
-              <PageCard key={page.id} page={page} />
+            {tail.map((page, i) => (
+              // Keep the colour cycle running across the ad break.
+              <PageCard key={page.id} page={page} index={head.length + i} />
             ))}
           </div>
         </>
@@ -48,7 +49,7 @@ export function PageGridSkeleton({ count = 10 }: { count?: number }) {
   return (
     <div className={GRID}>
       {Array.from({ length: count }, (_, i) => (
-        <PageCardSkeleton key={i} />
+        <PageCardSkeleton key={i} index={i} />
       ))}
     </div>
   );

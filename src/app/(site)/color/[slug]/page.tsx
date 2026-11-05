@@ -1,7 +1,17 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Download, Printer, Tag } from 'lucide-react';
+import {
+  Brush,
+  Download,
+  Images,
+  PaintBucket,
+  Printer,
+  Save,
+  Tag,
+  Undo2,
+  ZoomIn,
+} from 'lucide-react';
 import { getPageBySlug, getRelatedPages } from '@/lib/queries';
 import { getSettings } from '@/lib/settings';
 import { publicUrl } from '@/lib/r2/public';
@@ -59,10 +69,7 @@ export default async function ColorPage({ params }: Props) {
   return (
     <>
       <JsonLd
-        data={[
-          coloringPageSchema(page, publicUrl(page.image_key)),
-          breadcrumbSchema(trail),
-        ]}
+        data={[coloringPageSchema(page, publicUrl(page.image_key)), breadcrumbSchema(trail)]}
       />
       <ViewTracker slug={page.slug} />
 
@@ -165,7 +172,7 @@ export default async function ColorPage({ params }: Props) {
                     <Link
                       key={tag}
                       href={`/coloring-pages?tag=${encodeURIComponent(tag)}`}
-                      className="rounded-full bg-cream-deep px-3 py-1.5 text-xs font-extrabold text-ink-soft transition hover:bg-grape-100 hover:text-grape-700"
+                      className="rounded-full border border-ink/10 bg-white px-3 py-1.5 text-xs font-extrabold text-ink-soft transition hover:bg-cream-deep hover:text-grape-700"
                     >
                       #{tag}
                     </Link>
@@ -175,20 +182,31 @@ export default async function ColorPage({ params }: Props) {
             )}
           </div>
 
-          <aside className="card-kid p-6">
-            <h2 className="font-display text-xl font-extrabold text-ink">Colouring tips</h2>
-            <ul className="mt-3 space-y-2.5 text-sm font-semibold text-ink-soft">
-              {[
-                ['🪣', 'Tap the bucket, pick a colour, then tap inside a shape to fill it.'],
-                ['🖌️', 'Switch to the brush for shading - try the crayon and glitter styles.'],
-                ['🔍', 'Pinch to zoom in on the tiny bits, then use two fingers to move around.'],
-                ['↩️', 'Made a mistake? Undo takes back the last step.'],
-                ['💾', 'Your work saves itself on this device, so you can finish it later.'],
-              ].map(([emoji, text]) => (
+          <aside className="glass border-mint/55 p-6">
+            <h2
+              className="band-title text-xl text-ink"
+              style={{ ['--band' as string]: 'var(--color-mint)' }}
+            >
+              Colouring tips
+            </h2>
+            <ul className="mt-4 space-y-2.5 text-sm font-semibold text-ink-soft">
+              {(
+                [
+                  [
+                    PaintBucket,
+                    'Tap the bucket, pick a colour, then tap inside a shape to fill it.',
+                  ],
+                  [Brush, 'Switch to the brush for shading - try the crayon and glitter styles.'],
+                  [
+                    ZoomIn,
+                    'Pinch to zoom in on the tiny bits, then use two fingers to move around.',
+                  ],
+                  [Undo2, 'Made a mistake? Undo takes back the last step.'],
+                  [Save, 'Your work saves itself on this device, so you can finish it later.'],
+                ] as const
+              ).map(([Icon, text]) => (
                 <li key={text} className="flex gap-2.5">
-                  <span aria-hidden className="shrink-0 text-base">
-                    {emoji}
-                  </span>
+                  <Icon className="mt-0.5 size-4 shrink-0 text-mint-dark" aria-hidden />
                   <span>{text}</span>
                 </li>
               ))}
@@ -200,13 +218,10 @@ export default async function ColorPage({ params }: Props) {
         {related.length > 0 && (
           <section className="mt-14">
             <SectionHeading
-              emoji="🎈"
+              icon={Images}
+              band="var(--color-coral)"
               title="You might also like"
-              subtitle={
-                page.category
-                  ? `More from ${page.category.name}`
-                  : 'More pages to colour'
-              }
+              subtitle={page.category ? `More from ${page.category.name}` : 'More pages to colour'}
               href={page.category ? `/category/${page.category.slug}` : '/coloring-pages'}
             />
             <PageGrid pages={related} priorityCount={0} />

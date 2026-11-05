@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /* ------------------------------------------------------------------ */
-/*  form controls                                                      */
+/* form controls */
 /* ------------------------------------------------------------------ */
 
 export function Field({
@@ -38,7 +38,8 @@ export function Field({
 }
 
 const CONTROL =
-  'w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 ' +
+  'w-full rounded-2xl border border-slate-300/80 bg-white px-3.5 py-2.5 text-sm text-slate-900 ' +
+  'shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] ' +
   'placeholder:text-slate-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-200 focus:outline-none ' +
   'disabled:bg-slate-50 disabled:text-slate-500';
 
@@ -70,8 +71,10 @@ export function Toggle({
   return (
     <label
       className={cn(
-        'flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 p-3 transition',
-        checked ? 'border-violet-300 bg-violet-50/60' : 'bg-white hover:bg-slate-50',
+        'flex cursor-pointer items-start gap-3 rounded-2xl border p-3 transition',
+        checked
+          ? 'border-violet-300/70 bg-violet-50/70'
+          : 'border-ink/10 bg-white hover:bg-cream-deep',
         disabled && 'cursor-not-allowed opacity-60',
       )}
     >
@@ -84,7 +87,7 @@ export function Toggle({
         onClick={() => onChange(!checked)}
         className={cn(
           'relative mt-0.5 h-6 w-11 shrink-0 rounded-full transition',
-          checked ? 'bg-violet-600' : 'bg-slate-300',
+          checked ? 'bg-grape-600' : 'bg-slate-300',
         )}
       >
         <span
@@ -103,16 +106,18 @@ export function Toggle({
 }
 
 /* ------------------------------------------------------------------ */
-/*  buttons                                                            */
+/* buttons */
 /* ------------------------------------------------------------------ */
 
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
 
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-violet-600 text-white hover:bg-violet-700 focus-visible:outline-violet-600',
-  secondary: 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50',
-  danger: 'bg-rose-600 text-white hover:bg-rose-700',
-  ghost: 'text-slate-600 hover:bg-slate-100',
+  primary:
+    'border border-ink/10 bg-grape-600 text-white hover:-translate-y-0.5 hover: focus-visible:outline-violet-600',
+  secondary:
+    'border border-ink/10 bg-white text-slate-700 hover:-translate-y-0.5 hover:bg-cream-deep',
+  danger: 'border border-ink/10 bg-rose-600 text-white hover:-translate-y-0.5',
+  ghost: 'text-slate-600 hover:bg-cream-deep',
 };
 
 export function AdminButton({
@@ -127,8 +132,8 @@ export function AdminButton({
       {...rest}
       disabled={rest.disabled || loading}
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition',
-        'disabled:cursor-not-allowed disabled:opacity-50',
+        'inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-200',
+        'disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-50',
         VARIANTS[variant],
         className,
       )}
@@ -140,7 +145,7 @@ export function AdminButton({
 }
 
 /* ------------------------------------------------------------------ */
-/*  layout bits                                                        */
+/* layout bits */
 /* ------------------------------------------------------------------ */
 
 export function Card({
@@ -157,9 +162,9 @@ export function Card({
   className?: string;
 }) {
   return (
-    <section className={cn('rounded-2xl border border-slate-200 bg-white shadow-sm', className)}>
+    <section className={cn('rounded-[1.25rem] border border-ink/10 bg-white', className)}>
       {(title || action) && (
-        <header className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
+        <header className="flex flex-wrap items-start justify-between gap-3 border-b border-ink/10 px-5 py-4">
           <div>
             {title && <h2 className="text-base font-extrabold text-slate-900">{title}</h2>}
             {description && <p className="mt-0.5 text-sm text-slate-500">{description}</p>}
@@ -180,18 +185,18 @@ export function Badge({
   tone?: 'slate' | 'green' | 'amber' | 'rose' | 'violet' | 'sky';
 }) {
   const tones = {
-    slate: 'bg-slate-100 text-slate-700',
-    green: 'bg-emerald-100 text-emerald-700',
-    amber: 'bg-amber-100 text-amber-700',
-    rose: 'bg-rose-100 text-rose-700',
-    violet: 'bg-violet-100 text-violet-700',
-    sky: 'bg-sky-100 text-sky-700',
+    slate: 'border-slate-300/60 bg-slate-100/80 text-slate-700',
+    green: 'border-emerald-300/60 bg-emerald-100/80 text-emerald-700',
+    amber: 'border-amber-300/60 bg-amber-100/80 text-amber-700',
+    rose: 'border-rose-300/60 bg-rose-100/80 text-rose-700',
+    violet: 'border-violet-300/60 bg-violet-100/80 text-violet-700',
+    sky: 'border-sky-300/60 bg-sky-100/80 text-sky-700',
   } as const;
 
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold whitespace-nowrap',
+        'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold whitespace-nowrap',
         tones[tone],
       )}
     >
@@ -208,14 +213,17 @@ export function Alert({
   children: React.ReactNode;
 }) {
   const tones = {
-    info: 'border-sky-200 bg-sky-50 text-sky-900',
-    success: 'border-emerald-200 bg-emerald-50 text-emerald-900',
-    error: 'border-rose-200 bg-rose-50 text-rose-900',
-    warning: 'border-amber-200 bg-amber-50 text-amber-900',
+    info: 'border-sky-300/60 bg-sky-50/80 text-sky-900',
+    success: 'border-emerald-300/60 bg-emerald-50/80 text-emerald-900',
+    error: 'border-rose-300/60 bg-rose-50/80 text-rose-900',
+    warning: 'border-amber-300/60 bg-amber-50/80 text-amber-900',
   } as const;
 
   return (
-    <div className={cn('rounded-xl border px-4 py-3 text-sm font-semibold', tones[tone])} role="status">
+    <div
+      className={cn('rounded-2xl border px-4 py-3 text-sm font-semibold', tones[tone])}
+      role="status"
+    >
       {children}
     </div>
   );

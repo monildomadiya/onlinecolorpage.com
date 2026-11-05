@@ -1,5 +1,19 @@
 /** Tunables and asset lists for the coloring studio. */
 
+import {
+  Brush,
+  Eraser,
+  Hand,
+  PaintBucket,
+  Pencil,
+  PenLine,
+  Rainbow,
+  Sparkles,
+  Stamp,
+  Sticker,
+  type LucideIcon,
+} from 'lucide-react';
+
 export type ToolId = 'fill' | 'brush' | 'eraser' | 'sticker' | 'pan';
 export type BrushId = 'marker' | 'crayon' | 'rainbow' | 'glitter' | 'stamp';
 
@@ -78,12 +92,12 @@ export const QUICK_COLORS = PALETTE_ROWS[0].colors;
 /*  brushes                                                            */
 /* ------------------------------------------------------------------ */
 
-export const BRUSHES: { id: BrushId; label: string; emoji: string; hint: string }[] = [
-  { id: 'marker', label: 'Marker', emoji: '🖊️', hint: 'Smooth solid lines' },
-  { id: 'crayon', label: 'Crayon', emoji: '🖍️', hint: 'Soft waxy texture' },
-  { id: 'rainbow', label: 'Rainbow', emoji: '🌈', hint: 'Colour changes as you draw' },
-  { id: 'glitter', label: 'Glitter', emoji: '✨', hint: 'Sparkly scattered dots' },
-  { id: 'stamp', label: 'Stamps', emoji: '💗', hint: 'Trail of little shapes' },
+export const BRUSHES: { id: BrushId; label: string; icon: LucideIcon; hint: string }[] = [
+  { id: 'marker', label: 'Marker', icon: PenLine, hint: 'Smooth solid lines' },
+  { id: 'crayon', label: 'Crayon', icon: Pencil, hint: 'Soft waxy texture' },
+  { id: 'rainbow', label: 'Rainbow', icon: Rainbow, hint: 'Colour changes as you draw' },
+  { id: 'glitter', label: 'Glitter', icon: Sparkles, hint: 'Sparkly scattered dots' },
+  { id: 'stamp', label: 'Stamps', icon: Stamp, hint: 'Trail of little shapes' },
 ];
 
 export const BRUSH_SIZES = [6, 12, 22, 38, 60];
@@ -108,10 +122,10 @@ export const STICKER_SIZES = [48, 80, 120, 170];
 /*  tools                                                              */
 /* ------------------------------------------------------------------ */
 
-export const TOOLS: { id: ToolId; label: string; emoji: string; key: string }[] = [
-  { id: 'fill', label: 'Fill', emoji: '🪣', key: 'f' },
-  { id: 'brush', label: 'Draw', emoji: '🖌️', key: 'b' },
-  { id: 'eraser', label: 'Erase', emoji: '🧽', key: 'e' },
-  { id: 'sticker', label: 'Stickers', emoji: '🌟', key: 's' },
-  { id: 'pan', label: 'Move', emoji: '✋', key: 'h' },
+export const TOOLS: { id: ToolId; label: string; icon: LucideIcon; key: string }[] = [
+  { id: 'fill', label: 'Fill', icon: PaintBucket, key: 'f' },
+  { id: 'brush', label: 'Draw', icon: Brush, key: 'b' },
+  { id: 'eraser', label: 'Erase', icon: Eraser, key: 'e' },
+  { id: 'sticker', label: 'Stickers', icon: Sticker, key: 's' },
+  { id: 'pan', label: 'Move', icon: Hand, key: 'h' },
 ];

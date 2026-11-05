@@ -23,7 +23,7 @@ export default function MyArtRoute() {
 
       <header className="mb-8">
         <h1 className="font-display text-3xl font-extrabold text-ink sm:text-4xl">
-          🏅 My sticker book
+          My sticker book
         </h1>
         <p className="mt-2 max-w-2xl text-sm font-semibold text-ink-soft sm:text-base">
           Your artwork and badges live on this device only - nothing is uploaded and no account is

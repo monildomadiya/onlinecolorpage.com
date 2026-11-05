@@ -1,3 +1,4 @@
+import { PaintBucket } from 'lucide-react';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
@@ -100,9 +101,10 @@ export default async function CategoryRoute({ params, searchParams }: Props) {
           <div className="flex flex-wrap items-center gap-4">
             <span
               aria-hidden
-              className="grid size-20 shrink-0 place-items-center rounded-[1.75rem] bg-white text-4xl shadow-[0_6px_0_rgba(43,33,64,0.08)]"
+              className="grid size-20 shrink-0 place-items-center rounded-3xl border bg-white font-display text-4xl font-extrabold"
+              style={{ borderColor: accent, color: accent }}
             >
-              {category.emoji ?? '🎨'}
+              {category.name.charAt(0).toUpperCase()}
             </span>
 
             <div className="min-w-0">
@@ -134,7 +136,7 @@ export default async function CategoryRoute({ params, searchParams }: Props) {
 
         {result.items.length === 0 ? (
           <EmptyState
-            emoji="🪣"
+            icon={PaintBucket}
             title="This collection is still filling up"
             message="No pages here yet. Try another category - there is plenty to colour."
             action={

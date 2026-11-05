@@ -1,3 +1,4 @@
+import { SearchX } from 'lucide-react';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { getPages, getPopularTags } from '@/lib/queries';
@@ -47,7 +48,7 @@ export default async function SearchRoute({ searchParams }: Props) {
 
       <header className="mb-6">
         <h1 className="font-display text-3xl font-extrabold text-ink sm:text-4xl">
-          🔍 {q ? `Results for “${q}”` : 'Search coloring pages'}
+          {q ? `Results for “${q}”` : 'Search coloring pages'}
         </h1>
         {result && (
           <p className="mt-2 text-sm font-semibold text-ink-soft">
@@ -70,7 +71,7 @@ export default async function SearchRoute({ searchParams }: Props) {
               <a
                 key={tag}
                 href={`/search?q=${encodeURIComponent(tag)}`}
-                className="rounded-full bg-white px-3.5 py-2 text-xs font-extrabold text-grape-700 shadow-[0_3px_0_var(--color-cream-deep)] transition hover:bg-grape-100"
+                className="rounded-full border border-ink/10 bg-white px-3.5 py-2 text-xs font-extrabold text-grape-700 transition hover:-translate-y-0.5 hover:bg-cream-deep"
               >
                 {tag}
               </a>
@@ -83,7 +84,7 @@ export default async function SearchRoute({ searchParams }: Props) {
 
       {!result ? null : result.items.length === 0 ? (
         <EmptyState
-          emoji="🙈"
+          icon={SearchX}
           title={`No pages match “${q}”`}
           message="Try a shorter word, or browse by category instead."
           action={

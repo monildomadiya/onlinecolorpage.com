@@ -1,6 +1,18 @@
 import Link from 'next/link';
-import { Download, MousePointerClick, Printer, Sparkles } from 'lucide-react';
-import { getCategoriesWithCounts, getFeaturedPages, getNewestPages, getPopularPages } from '@/lib/queries';
+import {
+  ChevronRight,
+  Download,
+  MousePointerClick,
+  Palette,
+  PaintBucket,
+  Printer,
+} from 'lucide-react';
+import {
+  getCategoriesWithCounts,
+  getFeaturedPages,
+  getNewestPages,
+  getPopularPages,
+} from '@/lib/queries';
 import { getSettings } from '@/lib/settings';
 import { isSupabaseConfigured } from '@/lib/env';
 import { PageGrid } from '@/components/site/PageGrid';
@@ -9,7 +21,7 @@ import { SearchBox } from '@/components/site/SearchBox';
 import { AdSlot } from '@/components/site/AdSlot';
 import { SetupNotice } from '@/components/site/SetupNotice';
 import { JsonLd } from '@/components/site/JsonLd';
-import { Blobs, CrayonMascot, Sparkles as SparkleDots, WaveDivider } from '@/components/ui/Decor';
+import { CrayonMascot } from '@/components/ui/Decor';
 import { ButtonLink } from '@/components/ui/Button';
 import { EmptyState, SectionHeading } from '@/components/ui/Section';
 import { faqSchema } from '@/lib/seo/jsonld';
@@ -44,26 +56,51 @@ const FAQS = [
 const STEPS = [
   {
     icon: MousePointerClick,
-    emoji: '👆',
     title: 'Pick a picture',
     body: 'Browse animals, cartoons, rockets, princesses and more. Hundreds of pages, all free.',
-    tone: 'bg-sunny/20',
+    tone: 'var(--color-butter)',
   },
   {
-    icon: Sparkles,
-    emoji: '🪣',
+    icon: PaintBucket,
     title: 'Tap to colour',
     body: 'Choose a colour, tap inside a shape and it fills instantly. Brushes, glitter and stickers too.',
-    tone: 'bg-coral/20',
+    tone: 'var(--color-blush)',
   },
   {
     icon: Printer,
-    emoji: '🖨️',
     title: 'Save or print',
     body: 'Download your artwork as a PNG, or print the blank page and colour it with real crayons.',
-    tone: 'bg-sky/20',
+    tone: 'var(--color-sky)',
   },
 ];
+
+/**
+ * A full-width strip of flat colour.
+ *
+ * `tone` paints the strip and `ink` is the heading colour inside it. Setting
+ * --band-ink here is what lets the card captions and section titles below
+ * pick the right contrast without each one being told separately.
+ */
+function Band({
+  tone,
+  ink,
+  children,
+  className = '',
+}: {
+  tone: string;
+  ink: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      className={`w-full ${className}`}
+      style={{ background: tone, ['--band-ink' as string]: ink }}
+    >
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20">{children}</div>
+    </section>
+  );
+}
 
 export default async function HomePage() {
   const settings = await getSettings();
@@ -81,120 +118,95 @@ export default async function HomePage() {
   const totalPages = categories.reduce((sum, c) => sum + c.page_count, 0);
   const hasContent = newest.length + featured.length + popular.length > 0;
 
+  const words = home.hero_title.trim().split(/\s+/);
+
   return (
     <>
       <JsonLd data={faqSchema(FAQS)} />
 
-      {/* ============================ hero ============================ */}
-      <section className="dotted relative overflow-hidden bg-gradient-to-b from-grape-50 via-cream to-cream">
-        <Blobs />
-        <SparkleDots />
+      {/* ============================= hero ============================= */}
+      <section className="bg-cream">
+        <div className="mx-auto max-w-5xl px-4 pt-14 pb-4 text-center sm:px-6 sm:pt-20">
+          <h1 className="font-display text-[2.75rem] leading-[1.05] text-ink sm:text-6xl lg:text-7xl">
+            {words.map((word, i) => (
+              <span key={i} className={i === words.length - 1 ? 'text-coral' : undefined}>
+                {word}{' '}
+              </span>
+            ))}
+          </h1>
 
-        <div className="relative mx-auto grid max-w-7xl items-center gap-8 px-4 pt-10 pb-16 sm:px-6 lg:grid-cols-[1.15fr_1fr] lg:pt-16">
-          <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 font-display text-xs font-extrabold text-grape-700 shadow-[0_4px_0_var(--color-grape-100)]">
-              <Sparkles className="size-3.5" aria-hidden />
-              100% free · no sign-up
-            </span>
+          <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-ink-soft sm:text-lg">
+            {home.hero_subtitle}
+          </p>
 
-            <h1 className="mt-4 font-display text-4xl leading-[1.05] font-extrabold text-ink sm:text-5xl lg:text-6xl">
-              {home.hero_title.split(' ').map((word, i) => (
-                <span
-                  key={i}
-                  className={
-                    ['text-grape-600', 'text-coral', 'text-sky-dark', 'text-sunny-dark'][i % 4]
-                  }
-                >
-                  {word}{' '}
-                </span>
+          <div className="mx-auto mt-8 max-w-lg">
+            <SearchBox />
+          </div>
+
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <ButtonLink href="/coloring-pages" tone="coral" size="lg">
+              {home.hero_cta}
+            </ButtonLink>
+            <ButtonLink href="/categories" tone="ghost" size="lg">
+              Browse categories
+            </ButtonLink>
+          </div>
+
+          {totalPages > 0 && (
+            <dl className="mt-10 flex flex-wrap justify-center gap-x-12 gap-y-4">
+              {[
+                { label: 'Coloring pages', value: formatNumber(totalPages) },
+                { label: 'Categories', value: String(categories.length) },
+                { label: 'Price', value: 'Free' },
+              ].map((stat) => (
+                <div key={stat.label}>
+                  <dd className="font-display text-2xl text-ink">{stat.value}</dd>
+                  <dt className="mt-0.5 text-xs tracking-wide text-ink-soft uppercase">
+                    {stat.label}
+                  </dt>
+                </div>
               ))}
-            </h1>
-
-            <p className="mt-4 max-w-xl text-base leading-relaxed font-semibold text-ink-soft sm:text-lg">
-              {home.hero_subtitle}
-            </p>
-
-            <div className="mt-6 flex flex-wrap gap-3">
-              <ButtonLink href="/coloring-pages" tone="grape" size="lg">
-                🖍️ {home.hero_cta}
-              </ButtonLink>
-              <ButtonLink href="/categories" tone="ghost" size="lg">
-                Browse categories
-              </ButtonLink>
-            </div>
-
-            <div className="mt-6 max-w-md">
-              <SearchBox />
-            </div>
-
-            {totalPages > 0 && (
-              <dl className="mt-7 flex flex-wrap gap-x-7 gap-y-3">
-                {[
-                  { label: 'Coloring pages', value: formatNumber(totalPages) },
-                  { label: 'Categories', value: String(categories.length) },
-                  { label: 'Price', value: 'Free' },
-                ].map((stat) => (
-                  <div key={stat.label}>
-                    <dt className="text-[11px] font-extrabold tracking-wide text-ink-soft/70 uppercase">
-                      {stat.label}
-                    </dt>
-                    <dd className="font-display text-2xl font-extrabold text-grape-700">
-                      {stat.value}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            )}
-          </div>
-
-          <div className="relative mx-auto w-full max-w-sm lg:max-w-none">
-            <div className="relative">
-              <div
-                aria-hidden
-                className="absolute inset-0 -rotate-6 rounded-[2.5rem] bg-sunny/40"
-              />
-              <div
-                aria-hidden
-                className="absolute inset-0 rotate-3 rounded-[2.5rem] bg-coral/30"
-              />
-              <div className="card-kid relative grid place-items-center overflow-hidden p-6">
-                <CrayonMascot className="h-56 w-auto animate-bob sm:h-72" />
-                <p className="mt-2 text-center font-display text-lg font-extrabold text-ink">
-                  Hi, I&apos;m Cray!
-                </p>
-                <p className="text-center text-sm font-semibold text-ink-soft">
-                  Let&apos;s make something colourful together.
-                </p>
-              </div>
-            </div>
-          </div>
+            </dl>
+          )}
         </div>
 
-        <WaveDivider fill="var(--color-cream)" className="-mb-px" />
+        {/* The mascot introduces itself on a plain white sheet. */}
+        <div className="mx-auto max-w-sm px-4 pb-16 sm:px-6">
+          <div className="rounded-[var(--radius-card)] bg-white px-6 py-8 text-center shadow-[var(--shadow-card)]">
+            <CrayonMascot className="mx-auto h-48 w-auto animate-bob" />
+            <p className="mt-4 font-display text-lg text-ink">Hi, I&apos;m Cray!</p>
+            <p className="mt-1 text-sm text-ink-soft">
+              Let&apos;s make something colourful together.
+            </p>
+          </div>
+        </div>
       </section>
 
       <SetupNotice />
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <AdSlot slot="header" className="mt-4" />
-
-        {categories.length > 0 && (
-          <section className="pt-8" aria-label="Quick category links">
+      {categories.length > 0 && (
+        <section className="bg-cream" aria-label="Quick category links">
+          <div className="mx-auto max-w-7xl px-4 pb-10 sm:px-6">
             <CategoryRail categories={categories} />
-          </section>
-        )}
+          </div>
+        </section>
+      )}
 
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <AdSlot slot="header" />
         <RewardStrip />
+      </div>
 
-        {!hasContent && isSupabaseConfigured && (
-          <section className="py-14">
+      {!hasContent && isSupabaseConfigured && (
+        <section className="bg-cream">
+          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
             <EmptyState
-              emoji="🎨"
+              icon={Palette}
               title="The crayon box is still empty"
               message="No coloring pages have been published yet. Try the sample picture below, then sign in to the admin panel and upload your first batch."
               action={
                 <div className="flex flex-wrap justify-center gap-3">
-                  <ButtonLink href="/demo" tone="grape">
+                  <ButtonLink href="/demo" tone="coral">
                     Try the coloring game
                   </ButtonLink>
                   <ButtonLink href="/admin" tone="ghost">
@@ -203,143 +215,139 @@ export default async function HomePage() {
                 </div>
               }
             />
-          </section>
-        )}
+          </div>
+        </section>
+      )}
 
-        {featured.length > 0 && (
-          <section className="pt-12">
-            <SectionHeading
-              emoji="⭐"
-              title="Top picks this week"
-              subtitle="Hand-chosen favourites, ready to colour"
-              href="/coloring-pages?sort=popular"
-            />
-            <PageGrid pages={featured} priorityCount={5} />
-          </section>
-        )}
+      {/* ------------------------ coloured runs ------------------------ */}
+      {featured.length > 0 && (
+        <Band tone="var(--color-butter)" ink="var(--color-butter-dark)">
+          <SectionHeading
+            band="var(--color-butter-dark)"
+            title="Top picks this week"
+            subtitle="Hand-chosen favourites, ready to colour"
+            href="/coloring-pages?sort=popular"
+          />
+          <PageGrid pages={featured} priorityCount={5} />
+        </Band>
+      )}
 
-        {newest.length > 0 && (
-          <section className="pt-14">
-            <SectionHeading
-              emoji="🆕"
-              title="Fresh off the press"
-              subtitle="The newest pages we have added"
-              href="/coloring-pages"
-            />
-            <PageGrid pages={newest} adAfter={10} priorityCount={featured.length > 0 ? 0 : 5} />
-          </section>
-        )}
+      {newest.length > 0 && (
+        <Band tone="var(--color-mint)" ink="var(--color-mint-dark)">
+          <SectionHeading
+            band="var(--color-mint-dark)"
+            title="Fresh off the press"
+            subtitle="The newest pages we have added"
+            href="/coloring-pages"
+          />
+          <PageGrid pages={newest} adAfter={10} priorityCount={featured.length > 0 ? 0 : 5} />
+        </Band>
+      )}
 
-        {popular.length > 0 && (
-          <section className="pt-14">
-            <SectionHeading
-              emoji="🔥"
-              title="Most loved"
-              subtitle="What kids are colouring right now"
-              href="/popular"
-            />
-            <PageGrid pages={popular} priorityCount={0} />
-          </section>
-        )}
+      {popular.length > 0 && (
+        <Band tone="var(--color-blush)" ink="var(--color-blush-dark)">
+          <SectionHeading
+            band="var(--color-blush-dark)"
+            title="Most loved"
+            subtitle="What kids are colouring right now"
+            href="/popular"
+          />
+          <PageGrid pages={popular} priorityCount={0} />
+        </Band>
+      )}
 
-        {/* ======================= how it works ======================= */}
-        <section className="pt-16" aria-labelledby="how-it-works">
-          <h2
-            id="how-it-works"
-            className="text-center font-display text-2xl font-extrabold text-ink sm:text-3xl"
-          >
+      {/* ========================= how it works ========================= */}
+      <section className="bg-cream" aria-labelledby="how-it-works">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20">
+          <h2 id="how-it-works" className="text-center font-display text-[2rem] text-ink sm:text-[2.75rem]">
             How it works
           </h2>
-          <p className="mx-auto mt-2 max-w-lg text-center text-sm font-semibold text-ink-soft">
+          <p className="mx-auto mt-3 max-w-lg text-center text-sm text-ink-soft sm:text-base">
             Three taps from picking a picture to printing it on the fridge.
           </p>
 
-          <ol className="mt-8 grid gap-4 sm:grid-cols-3">
+          <ol className="mt-12 grid gap-6 sm:grid-cols-3">
             {STEPS.map((step, i) => (
-              <li key={step.title} className="card-kid relative p-6 text-center">
-                <span className="absolute top-4 left-4 grid size-8 place-items-center rounded-full bg-grape-500 font-display text-sm font-extrabold text-white">
-                  {i + 1}
-                </span>
+              <li key={step.title} className="text-center">
                 <div
-                  className={`mx-auto grid size-16 place-items-center rounded-3xl text-3xl ${step.tone}`}
+                  className="mx-auto grid size-20 place-items-center rounded-2xl text-ink"
+                  style={{ background: step.tone }}
                   aria-hidden
                 >
-                  {step.emoji}
+                  <step.icon className="size-9" strokeWidth={1.75} />
                 </div>
-                <h3 className="mt-4 font-display text-lg font-extrabold text-ink">{step.title}</h3>
-                <p className="mt-1.5 text-sm font-semibold text-ink-soft">{step.body}</p>
+                <p className="mt-4 text-xs tracking-[0.12em] text-ink-soft uppercase">
+                  Step {i + 1}
+                </p>
+                <h3 className="mt-1 font-display text-lg text-ink">{step.title}</h3>
+                <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-ink-soft">
+                  {step.body}
+                </p>
               </li>
             ))}
           </ol>
-        </section>
+        </div>
+      </section>
 
-        {/* ======================== categories ======================== */}
-        {categories.length > 0 && (
-          <section className="pt-16">
-            <SectionHeading
-              emoji="🗂️"
-              title="Pick a theme"
-              subtitle="Every collection, from puppies to planets"
-              href="/categories"
-            />
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {categories.slice(0, 8).map((category) => (
-                <CategoryCard key={category.id} category={category} count={category.page_count} />
-              ))}
-            </div>
-          </section>
-        )}
+      {/* =========================== categories =========================== */}
+      {categories.length > 0 && (
+        <Band tone="var(--color-sky)" ink="var(--color-sky-dark)">
+          <SectionHeading
+            band="var(--color-sky-dark)"
+            title="Pick a theme"
+            subtitle="Every collection, from puppies to planets"
+            href="/categories"
+          />
+          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+            {categories.slice(0, 8).map((category) => (
+              <CategoryCard key={category.id} category={category} count={category.page_count} />
+            ))}
+          </div>
+        </Band>
+      )}
 
-        {/* =========================== faq =========================== */}
-        <section className="pt-16 pb-6" aria-labelledby="faq">
-          <h2 id="faq" className="text-center font-display text-2xl font-extrabold text-ink sm:text-3xl">
+      {/* ============================== faq ============================== */}
+      <section className="bg-cream" aria-labelledby="faq">
+        <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-20">
+          <h2 id="faq" className="text-center font-display text-[2rem] text-ink sm:text-[2.75rem]">
             Questions parents ask
           </h2>
 
-          <div className="mx-auto mt-8 max-w-3xl space-y-3">
+          <div className="mt-10 divide-y divide-ink/10 border-y border-ink/10">
             {FAQS.map(({ q, a }) => (
-              <details key={q} className="card-kid group px-5 py-4">
-                <summary className="cursor-pointer list-none font-display text-base font-extrabold text-ink marker:hidden">
-                  <span className="mr-2 text-grape-500 transition-transform group-open:rotate-90 inline-block" aria-hidden>
-                    ▸
-                  </span>
+              <details key={q} className="group py-4">
+                <summary className="flex cursor-pointer list-none items-start gap-3 text-base font-medium text-ink marker:hidden">
+                  <ChevronRight
+                    className="mt-1 size-4 shrink-0 text-coral transition-transform duration-200 group-open:rotate-90"
+                    aria-hidden
+                  />
                   {q}
                 </summary>
-                <p className="mt-2.5 pl-6 text-sm leading-relaxed font-semibold text-ink-soft">{a}</p>
+                <p className="mt-3 pl-7 text-sm leading-relaxed text-ink-soft">{a}</p>
               </details>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* ========================== closing ========================== */}
-        <section className="pb-8">
-          <div className="stripey relative overflow-hidden rounded-[2.5rem] bg-grape-500 px-6 py-12 text-center">
-            <div className="relative">
-              <p className="text-4xl" aria-hidden>
-                🎨
-              </p>
-              <h2 className="mt-2 font-display text-2xl font-extrabold text-white sm:text-3xl">
-                Ready to make something colourful?
-              </h2>
-              <p className="mx-auto mt-2 max-w-md text-sm font-semibold text-grape-100">
-                {site.tagline}
-              </p>
-              <div className="mt-6 flex flex-wrap justify-center gap-3">
-                <ButtonLink href="/coloring-pages" tone="sunny" size="lg">
-                  Start colouring
-                </ButtonLink>
-                <Link
-                  href="/my-art"
-                  className="btn-kid btn-ghost text-lg"
-                >
-                  <Download className="size-5" aria-hidden />
-                  My sticker book
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
+      {/* ============================ closing ============================ */}
+      <Band tone="var(--color-lilac)" ink="var(--color-lilac-dark)" className="text-center">
+        <h2 className="font-display text-[2rem] text-lilac-dark sm:text-[2.75rem]">
+          Ready to make something colourful?
+        </h2>
+        <p className="mx-auto mt-3 max-w-md text-sm text-ink-soft sm:text-base">{site.tagline}</p>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <ButtonLink href="/coloring-pages" tone="coral" size="lg">
+            Start colouring
+          </ButtonLink>
+          <Link href="/my-art" className="btn-kid btn-ghost px-8 py-4 text-lg">
+            <Download className="size-5" aria-hidden />
+            My sticker book
+          </Link>
+        </div>
+      </Band>
 
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <AdSlot slot="page_bottom" />
       </div>
     </>

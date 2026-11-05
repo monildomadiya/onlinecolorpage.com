@@ -41,17 +41,29 @@ export function Pagination({
   if (totalPages <= 1) return null;
 
   const items = windowed(page, totalPages);
+  // Shared glass treatment for every chip that is not the current page.
+  const rest =
+    'border border-ink/10 bg-white text-grape-700 hover:-translate-y-0.5 hover:bg-cream-deep';
+  const muted = 'border border-ink/10 bg-white text-ink-soft/35';
   const chip =
-    'grid tap-big place-items-center rounded-xl font-display text-sm font-extrabold transition';
+    'grid tap-big place-items-center rounded-full font-display text-sm font-extrabold transition';
 
   return (
-    <nav aria-label="Pagination" className={cn('flex flex-wrap items-center justify-center gap-2', className)}>
+    <nav
+      aria-label="Pagination"
+      className={cn('flex flex-wrap items-center justify-center gap-2', className)}
+    >
       {page > 1 ? (
-        <Link href={hrefFor(page - 1)} rel="prev" aria-label="Previous page" className={cn(chip, 'bg-white text-grape-700 hover:bg-grape-100')}>
+        <Link
+          href={hrefFor(page - 1)}
+          rel="prev"
+          aria-label="Previous page"
+          className={cn(chip, rest)}
+        >
           <ChevronLeft className="size-5" aria-hidden />
         </Link>
       ) : (
-        <span aria-hidden className={cn(chip, 'bg-white/50 text-ink-soft/30')}>
+        <span aria-hidden className={cn(chip, muted)}>
           <ChevronLeft className="size-5" />
         </span>
       )}
@@ -66,12 +78,7 @@ export function Pagination({
             key={item}
             href={hrefFor(item)}
             aria-current={item === page ? 'page' : undefined}
-            className={cn(
-              chip,
-              item === page
-                ? 'bg-grape-500 text-white shadow-[0_4px_0_var(--color-grape-700)]'
-                : 'bg-white text-grape-700 hover:bg-grape-100',
-            )}
+            className={cn(chip, item === page ? 'border border-ink/10 bg-coral text-white' : rest)}
           >
             {item}
           </Link>
@@ -79,11 +86,11 @@ export function Pagination({
       )}
 
       {page < totalPages ? (
-        <Link href={hrefFor(page + 1)} rel="next" aria-label="Next page" className={cn(chip, 'bg-white text-grape-700 hover:bg-grape-100')}>
+        <Link href={hrefFor(page + 1)} rel="next" aria-label="Next page" className={cn(chip, rest)}>
           <ChevronRight className="size-5" aria-hidden />
         </Link>
       ) : (
-        <span aria-hidden className={cn(chip, 'bg-white/50 text-ink-soft/30')}>
+        <span aria-hidden className={cn(chip, muted)}>
           <ChevronRight className="size-5" />
         </span>
       )}

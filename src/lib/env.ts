@@ -11,10 +11,17 @@ function optional(value: string | undefined): string {
   return (value ?? '').trim();
 }
 
+/**
+ * The shapes .env.example ships with. A half-filled file is worth catching
+ * here: handed to Supabase, `sb_secret_...` comes back as "Invalid API key"
+ * from somewhere far away from the variable that caused it.
+ */
+const PLACEHOLDER = /\.\.\.$|xxxxxxxx/i;
+
 /** Required at run time; throws with a readable message when absent. */
 function required(name: string, value: string | undefined): string {
   const v = optional(value);
-  if (!v) {
+  if (!v || PLACEHOLDER.test(v)) {
     throw new Error(
       `Missing environment variable ${name}. Copy .env.example to .env.local (or add it to the Azure app settings) and fill it in.`,
     );
@@ -66,6 +73,17 @@ export const serverEnv = {
     return optional(process.env.ADMIN_BOOTSTRAP_EMAIL).toLowerCase();
   },
 } as const;
+
+/**
+ * The admin area reads and writes through the service-role key, so a missing
+ * one takes the whole dashboard down rather than a single feature. Checked
+ * here so the panel can say so instead of throwing on the first query.
+ */
+export const isSupabaseAdminConfigured = Boolean(
+  isSupabaseConfigured &&
+    optional(process.env.SUPABASE_SERVICE_ROLE_KEY) &&
+    !PLACEHOLDER.test(optional(process.env.SUPABASE_SERVICE_ROLE_KEY)),
+);
 
 export const isR2Configured = Boolean(
   optional(process.env.R2_ACCOUNT_ID) &&

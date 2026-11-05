@@ -36,7 +36,7 @@ export default async function AdminDashboard() {
   return (
     <>
       <PageHeader
-        title={`Hi ${firstName} 👋`}
+        title={`Hi ${firstName}`}
         description="Everything on onlinecolorpage.com at a glance."
         action={
           <div className="flex gap-2">

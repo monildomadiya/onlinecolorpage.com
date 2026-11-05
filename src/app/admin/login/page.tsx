@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { LoginForm } from '@/components/admin/LoginForm';
+import { CrayonMark } from '@/components/ui/Decor';
 import { isSupabaseConfigured } from '@/lib/env';
 
 export const metadata: Metadata = {
@@ -10,17 +11,17 @@ export const metadata: Metadata = {
 
 export default function AdminLoginPage() {
   return (
-    <main className="grid min-h-dvh place-items-center bg-slate-50 px-4 py-12">
+    <main className="grid min-h-dvh place-items-center px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-6 text-center">
-          <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-violet-600 text-2xl shadow-[0_6px_0_#5b21b6]">
-            🖍️
+          <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-ink/10 bg-grape-600 text-white">
+            <CrayonMark className="size-8" />
           </span>
           <h1 className="mt-4 text-xl font-extrabold text-slate-900">Online Color Page</h1>
           <p className="mt-1 text-sm text-slate-500">Sign in to the admin panel</p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-[1.25rem] border border-ink/10 bg-white p-6">
           {isSupabaseConfigured ? (
             <Suspense fallback={<div className="h-56 animate-pulse rounded-xl bg-slate-100" />}>
               <LoginForm />

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Mail } from 'lucide-react';
 import { getCategories } from '@/lib/queries';
 import { getSettings } from '@/lib/settings';
-import { WaveDivider } from '@/components/ui/Decor';
+import { CrayonMark } from '@/components/ui/Decor';
 import { FacebookIcon, InstagramIcon, PinterestIcon, XIcon } from './BrandIcons';
 
 const HELP_LINKS = [
@@ -27,23 +27,22 @@ export async function Footer() {
   ].filter((s) => s.href);
 
   return (
-    <footer className="mt-20 bg-grape-600 text-grape-50">
-      <WaveDivider fill="var(--color-grape-600)" className="-mt-px -translate-y-full" />
-
-      <div className="mx-auto max-w-7xl px-4 pt-4 pb-10 sm:px-6">
+    /* The last band on the page, a warm sand that closes the colour run. */
+    <footer className="mt-20 bg-sand text-ink">
+      <div className="mx-auto max-w-7xl px-4 pt-14 pb-10 sm:px-6">
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-2">
-            <div className="flex items-center gap-2">
-              <span className="grid size-10 place-items-center rounded-2xl bg-white/15 text-xl">
-                🖍️
+            <div className="flex items-center gap-2.5">
+              <span className="grid size-11 place-items-center rounded-xl bg-coral text-white">
+                <CrayonMark className="size-6" />
               </span>
-              <span className="font-display text-2xl font-extrabold text-white">{site.name}</span>
+              <span className="font-display text-xl text-ink">{site.name}</span>
             </div>
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-grape-100">
+            <p className="mt-4 max-w-md text-sm leading-relaxed text-ink-soft">
               {site.description}
             </p>
 
-            <div className="mt-5 flex flex-wrap items-center gap-2">
+            <div className="mt-6 flex flex-wrap items-center gap-2">
               {socials.map(({ href, label, Icon }) => (
                 <a
                   key={label}
@@ -51,7 +50,7 @@ export async function Footer() {
                   aria-label={label}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="tap-big grid place-items-center rounded-2xl bg-white/15 transition hover:bg-white/25"
+                  className="tap-big grid place-items-center rounded-xl text-ink-soft transition hover:bg-ink hover:text-cream"
                 >
                   <Icon className="size-5" />
                 </a>
@@ -59,7 +58,7 @@ export async function Footer() {
               {site.email && (
                 <a
                   href={`mailto:${site.email}`}
-                  className="flex items-center gap-2 rounded-2xl bg-white/15 px-4 py-2.5 text-sm font-bold transition hover:bg-white/25"
+                  className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-ink-soft transition hover:bg-ink hover:text-cream"
                 >
                   <Mail className="size-4" aria-hidden />
                   {site.email}
@@ -69,32 +68,32 @@ export async function Footer() {
           </div>
 
           <nav aria-label="Categories">
-            <h2 className="font-display text-base font-extrabold text-white">Categories</h2>
-            <ul className="mt-3 space-y-2 text-sm">
+            <h2 className="text-base font-semibold text-ink">Categories</h2>
+            <ul className="mt-4 space-y-2.5 text-sm">
               {categories.slice(0, 8).map((category) => (
                 <li key={category.slug}>
                   <Link
                     href={`/category/${category.slug}`}
-                    className="text-grape-100 transition hover:text-white"
+                    className="text-ink-soft transition hover:text-ink"
                   >
-                    {category.emoji} {category.name}
+                    {category.name}
                   </Link>
                 </li>
               ))}
               <li>
-                <Link href="/categories" className="font-extrabold text-sunny hover:underline">
-                  See all categories →
+                <Link href="/categories" className="font-semibold text-ink hover:underline">
+                  Explore all categories
                 </Link>
               </li>
             </ul>
           </nav>
 
           <nav aria-label="Help">
-            <h2 className="font-display text-base font-extrabold text-white">Help</h2>
-            <ul className="mt-3 space-y-2 text-sm">
+            <h2 className="text-base font-semibold text-ink">Help</h2>
+            <ul className="mt-4 space-y-2.5 text-sm">
               {HELP_LINKS.map(({ href, label }) => (
                 <li key={href}>
-                  <Link href={href} className="text-grape-100 transition hover:text-white">
+                  <Link href={href} className="text-ink-soft transition hover:text-ink">
                     {label}
                   </Link>
                 </li>
@@ -103,11 +102,11 @@ export async function Footer() {
           </nav>
         </div>
 
-        <div className="mt-10 flex flex-col items-center gap-3 border-t border-white/15 pt-6 text-center text-xs text-grape-200 sm:flex-row sm:justify-between sm:text-left">
+        <div className="mt-12 flex flex-col items-center gap-3 border-t border-ink/10 pt-6 text-center text-xs text-ink-soft sm:flex-row sm:justify-between sm:text-left">
           <p>
             © {year} {site.name}. Free for personal &amp; classroom use.
           </p>
-          <p>Made with 💜 for little artists everywhere.</p>
+          <p>Made for little artists everywhere.</p>
         </div>
       </div>
     </footer>

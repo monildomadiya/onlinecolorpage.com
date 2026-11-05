@@ -2,7 +2,7 @@ import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { serverEnv } from '@/lib/env';
+import { isSupabaseAdminConfigured, serverEnv } from '@/lib/env';
 import type { Profile, Role } from '@/types/db';
 
 export interface Session {
@@ -17,6 +17,11 @@ export interface Session {
  * without touching SQL).
  */
 export const getSession = cache(async (): Promise<Session | null> => {
+  // The profile lookup below needs the service-role key. Callers that only
+  // want a name to greet can live without it; the ones that gate on it go
+  // through requireStaff(), which says so out loud.
+  if (!isSupabaseAdminConfigured) return null;
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -25,15 +30,26 @@ export const getSession = cache(async (): Promise<Session | null> => {
   if (!user?.email) return null;
 
   const admin = createAdminClient();
-  let { data: profile } = await admin
+  const { data: existing, error: readError } = await admin
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .maybeSingle<Profile>();
 
+  // A failed query is not the same as "this user has no profile". Reporting
+  // one as a missing session sends requireStaff() to /admin/login, which
+  // middleware bounces straight back to /admin while the cookie is still
+  // valid - the two disagree forever and the browser ends up on a blank page.
+  // Failing loudly here costs one error page instead.
+  if (readError) {
+    throw new Error(`Could not read the profile for ${user.email}: ${readError.message}`);
+  }
+
+  let profile = existing;
+
   // The auth trigger normally creates this; make it self-healing anyway.
   if (!profile) {
-    const { data: created } = await admin
+    const { data: created, error: insertError } = await admin
       .from('profiles')
       .insert({
         id: user.id,
@@ -42,6 +58,11 @@ export const getSession = cache(async (): Promise<Session | null> => {
       })
       .select('*')
       .maybeSingle<Profile>();
+
+    if (insertError) {
+      throw new Error(`Could not create a profile for ${user.email}: ${insertError.message}`);
+    }
+
     profile = created ?? null;
   }
 
@@ -73,6 +94,14 @@ export function hasRole(profile: Profile | null | undefined, minimum: Role): boo
  * nobody is signed in, and to /admin/no-access when the account is not staff.
  */
 export async function requireStaff(minimum: Role = 'editor'): Promise<Session> {
+  // Sending an unconfigured install to /admin/login would only bounce off
+  // middleware, which still sees a valid cookie, and come straight back.
+  if (!isSupabaseAdminConfigured) {
+    throw new Error(
+      'SUPABASE_SERVICE_ROLE_KEY is not set, so the admin area cannot read profiles.',
+    );
+  }
+
   const session = await getSession();
 
   if (!session) redirect('/admin/login');

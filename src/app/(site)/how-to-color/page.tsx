@@ -40,7 +40,6 @@ export default function HowToColorRoute() {
 
       <Prose
         title="How to colour online"
-        emoji="🎨"
         intro="Everything in the coloring game, in about two minutes."
         trail={[
           { name: 'Home', path: '/' },
@@ -54,7 +53,7 @@ export default function HowToColorRoute() {
           canvas opens straight away - nothing to install, no account to make.
         </p>
 
-        <h2>2. Fill shapes with the bucket 🪣</h2>
+        <h2>2. Fill shapes with the bucket</h2>
         <p>
           The bucket is selected by default. Choose a colour from the palette and tap inside any
           white shape - it fills instantly, right up to the outlines. Keep tapping to colour the
@@ -62,7 +61,7 @@ export default function HowToColorRoute() {
           a little further in.
         </p>
 
-        <h2>3. Draw freely with brushes 🖌️</h2>
+        <h2>3. Draw freely with brushes</h2>
         <p>Switch to the brush tool for shading, hair, grass and anything freehand. Five styles:</p>
         <ul>
           <li>
@@ -83,7 +82,7 @@ export default function HowToColorRoute() {
         </ul>
         <p>Five brush sizes, from fine detail to big background sweeps.</p>
 
-        <h2>4. Add stickers 🌟</h2>
+        <h2>4. Add stickers</h2>
         <p>
           Pick a sticker, then tap the picture to drop it in. Sizes run from tiny to huge, and each
           one lands at a slightly different angle so a group never looks stamped.

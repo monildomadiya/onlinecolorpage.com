@@ -12,7 +12,7 @@ export default function NotFound() {
       <div>
         <CrayonMascot className="mx-auto h-40 w-auto animate-bob" />
 
-        <p className="mt-6 font-display text-6xl font-extrabold text-grape-500">404</p>
+        <p className="text-aurora mt-6 font-display text-7xl font-extrabold tracking-tight">404</p>
         <h1 className="mt-1 font-display text-2xl font-extrabold text-ink sm:text-3xl">
           This page went off the lines
         </h1>
@@ -22,10 +22,10 @@ export default function NotFound() {
 
         <div className="mt-7 flex flex-wrap justify-center gap-3">
           <Link href="/" className="btn-kid">
-            🏠 Go home
+            Go home
           </Link>
           <Link href="/coloring-pages" className="btn-kid btn-sunny">
-            🖍️ Browse coloring pages
+            Browse coloring pages
           </Link>
         </div>
       </div>

@@ -73,14 +73,15 @@ jobs:
     if: vars.AZURE_WEBAPP_NAME != ''
     environment:
       name: production
-      url: https://${{ vars.AZURE_WEBAPP_NAME }}.azurewebsites.net
+      url: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://onlinecolorpage.com' }}
     steps:
       - uses: actions/download-artifact@v4
         with:
           name: app
           path: app
 
-      - uses: azure/webapps-deploy@v3
+      - id: deploy
+        uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ vars.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
@@ -88,7 +89,7 @@ jobs:
 
       - name: Wait for the health check
         run: |
-          url="https://${{ vars.AZURE_WEBAPP_NAME }}.azurewebsites.net/api/health"
+          url="${{ steps.deploy.outputs.webapp-url }}/api/health"
           for attempt in $(seq 1 30); do
             if curl -fsS --max-time 10 "$url" > /dev/null; then
               echo "Healthy after $attempt attempt(s)."

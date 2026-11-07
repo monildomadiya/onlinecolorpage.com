@@ -36,9 +36,6 @@ export const publicEnv = {
   supabaseAnonKey: optional(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
   adsenseClient: optional(process.env.NEXT_PUBLIC_ADSENSE_CLIENT),
   gaId: optional(process.env.NEXT_PUBLIC_GA_ID),
-  // Search Console's HTML-tag method. Public by design: the whole point is
-  // that Google reads it off the page.
-  googleSiteVerification: optional(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION),
 } as const;
 
 /** True when Supabase is wired up. Lets pages render a setup hint instead of crashing. */

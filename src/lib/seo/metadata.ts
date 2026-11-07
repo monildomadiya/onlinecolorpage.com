@@ -72,12 +72,6 @@ export async function buildRootMetadata(): Promise<Metadata> {
       apple: '/apple-icon.png',
     },
     category: 'kids',
-    // Rendered as <meta name="google-site-verification"> so Search Console
-    // can verify the property. Left out entirely when unset, rather than
-    // emitting an empty tag that fails verification confusingly.
-    ...(publicEnv.googleSiteVerification
-      ? { verification: { google: publicEnv.googleSiteVerification } }
-      : {}),
   };
 }
 

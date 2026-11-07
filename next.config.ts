@@ -17,6 +17,27 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
 
+  /**
+   * Server Actions arrive through the Cloudflare Worker, which rewrites Host
+   * to the azurewebsites.net origin - App Service on the Free tier accepts no
+   * custom hostname. That leaves x-forwarded-host as the Azure name while the
+   * browser's Origin is still the public domain, and Next rejects the
+   * mismatch as cross-origin before the action runs. Every sign-in died
+   * there with "Invalid Server Actions request".
+   *
+   * Listing the hosts the site is legitimately served on is the supported fix;
+   * the CSRF check stays on for everything else.
+   */
+  experimental: {
+    serverActions: {
+      allowedOrigins: [
+        'onlinecolorpage.com',
+        'www.onlinecolorpage.com',
+        'onlinecolorpage-a5exfehkcqdqehdh.centralindia-01.azurewebsites.net',
+      ],
+    },
+  },
+
   // sharp + pdf-lib must stay as real node modules in the server bundle.
   serverExternalPackages: ['sharp', 'pdf-lib'],
 

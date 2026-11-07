@@ -95,15 +95,34 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-      - id: deploy
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ vars.AZURE_WEBAPP_NAME }}
-          package: app
+      # A plain zip deploy MERGES into wwwroot: files in the zip overwrite
+      # their counterparts and everything else is left alone. The previous
+      # build's prerendered HTML then survives under .next/server/app/ and is
+      # served with Server Action ids the new server does not know, so every
+      # action fails with UnrecognizedActionError while the pages look fine.
+      # --clean wipes the target first, which is the only way the
+      # replacement is complete.
+      - name: Deploy, replacing what is already there
+        env:
+          RG: ${{ vars.AZURE_RESOURCE_GROUP || 'onlinecolorpage-rg' }}
+          APP: ${{ vars.AZURE_WEBAPP_NAME }}
+        run: |
+          (cd app && zip -qr ../app.zip .)
+          az webapp deploy \
+            --resource-group "$RG" \
+            --name "$APP" \
+            --src-path app.zip \
+            --type zip \
+            --clean true \
+            --restart true
 
       - name: Wait for the health check
+        env:
+          RG: ${{ vars.AZURE_RESOURCE_GROUP || 'onlinecolorpage-rg' }}
+          APP: ${{ vars.AZURE_WEBAPP_NAME }}
         run: |
-          url="${{ steps.deploy.outputs.webapp-url }}/api/health"
+          host=$(az webapp show -g "$RG" -n "$APP" --query defaultHostName -o tsv)
+          url="https://$host/api/health"
           for attempt in $(seq 1 30); do
             if curl -fsS --max-time 10 "$url" > /dev/null; then
               echo "Healthy after $attempt attempt(s)."

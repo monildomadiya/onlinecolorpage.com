@@ -13,6 +13,24 @@ export function encodeKey(key: string): string {
 }
 
 /**
+ * Bump this by hand when a bad response has been cached under the current
+ * /api/file URLs.
+ *
+ * It exists because of one: next.config.ts used to stamp
+ * `immutable, max-age=31536000` on every response from that path, errors
+ * included, so the route's own "Storage is not configured." 503 went out
+ * looking like a line-art PNG that never expires. Cloudflare kept it, and so
+ * did the browser of everyone who opened a coloring page that week.
+ *
+ * The config is fixed and errors now say no-store, but neither reaches a copy
+ * already sitting in someone's browser, and `immutable` means it will not even
+ * revalidate. A different URL is the only way past it.
+ *
+ * 1 -> 2: the 503 above, cached 2026-11-05 to 2026-11-08.
+ */
+const CACHE_EPOCH = '2';
+
+/**
  * Same-origin URL that streams the object through our own server.
  *
  * Always use this for anything the <canvas> must read pixels from: a
@@ -20,7 +38,7 @@ export function encodeKey(key: string): string {
  */
 export function fileUrl(key: string | null | undefined): string {
   if (!key) return '';
-  return `/api/file/${encodeKey(key)}`;
+  return `/api/file/${encodeKey(key)}?v=${CACHE_EPOCH}`;
 }
 
 /**

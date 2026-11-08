@@ -144,8 +144,11 @@ export function useColoringEngine({
     setError(null);
 
     const image = new Image();
-    // Same-origin via /api/file, but be explicit so the canvas stays readable.
-    image.crossOrigin = 'anonymous';
+    // No crossOrigin here. fileUrl() is always /api/file on our own origin, so
+    // the canvas can read it either way - but setting the attribute puts the
+    // request in CORS mode, which sends an Origin header and makes caches keep
+    // a separate copy under it. That second copy is what served a stale error
+    // to the canvas while every plain request got a healthy image.
     image.decoding = 'sync';
 
     image.onload = async () => {

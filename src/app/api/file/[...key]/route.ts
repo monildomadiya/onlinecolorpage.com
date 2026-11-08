@@ -5,6 +5,19 @@ import { isR2Configured } from '@/lib/env';
 export const runtime = 'nodejs';
 
 /**
+ * Errors from this route must never be stored by a cache.
+ *
+ * A success here is served `immutable, max-age=1y`, and the path ends in the
+ * object's own extension, so a CDN in front of us treats it as a static image
+ * and caches by status as well as body. Without this header a momentary 503 -
+ * one deploy with the R2 variables not yet set, say - is kept at the edge for
+ * a year, and every visitor keeps getting it long after the server is healthy
+ * again. That is not hypothetical: it is what put "Storage is not configured."
+ * in front of the coloring canvas on the live site.
+ */
+const NO_STORE = { 'Cache-Control': 'no-store' };
+
+/**
  * Streams an R2 object through our own origin.
  *
  * Why this exists even when a public CDN base is configured: the coloring
@@ -17,14 +30,17 @@ export async function GET(
   { params }: { params: Promise<{ key: string[] }> },
 ) {
   if (!isR2Configured) {
-    return NextResponse.json({ error: 'Storage is not configured.' }, { status: 503 });
+    return NextResponse.json(
+      { error: 'Storage is not configured.' },
+      { status: 503, headers: NO_STORE },
+    );
   }
 
   const { key: segments } = await params;
   const key = segments.map(decodeURIComponent).join('/');
 
   if (!key || key.includes('..') || key.startsWith('/')) {
-    return NextResponse.json({ error: 'Bad key.' }, { status: 400 });
+    return NextResponse.json({ error: 'Bad key.' }, { status: 400, headers: NO_STORE });
   }
 
   try {
@@ -41,6 +57,10 @@ export async function GET(
       // Same-origin by definition, but be explicit for canvas reads.
       'Access-Control-Allow-Origin': '*',
       'Cross-Origin-Resource-Policy': 'cross-origin',
+      // The canvas asks for this image in CORS mode, so the request carries an
+      // Origin and a cache in front of us may key on it. Saying so stops the
+      // CORS and plain copies standing in for one another.
+      Vary: 'Origin',
     });
     if (etag) headers.set('ETag', etag);
     if (object.ContentLength) headers.set('Content-Length', String(object.ContentLength));
@@ -50,9 +70,12 @@ export async function GET(
   } catch (error) {
     const name = (error as { name?: string })?.name;
     if (name === 'NoSuchKey' || name === 'NotFound') {
-      return NextResponse.json({ error: 'Not found.' }, { status: 404 });
+      return NextResponse.json({ error: 'Not found.' }, { status: 404, headers: NO_STORE });
     }
     console.error('[api/file] failed to read', key, error);
-    return NextResponse.json({ error: 'Could not read the file.' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Could not read the file.' },
+      { status: 500, headers: NO_STORE },
+    );
   }
 }

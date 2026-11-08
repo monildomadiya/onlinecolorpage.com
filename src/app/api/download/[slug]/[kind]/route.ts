@@ -12,6 +12,13 @@ export const maxDuration = 60;
 type Kind = 'png' | 'pdf';
 
 /**
+ * Same rule as /api/file: a success here is cacheable for a day, so an error
+ * that goes out without this header can be kept by a CDN for a day too, long
+ * after whatever caused it is fixed.
+ */
+const NO_STORE = { 'Cache-Control': 'no-store' };
+
+/**
  * Download endpoint for a published page.
  *
  *   /api/download/<slug>/png  -> the line-art master as an attachment
@@ -30,10 +37,10 @@ export async function GET(
   const kind = rawKind.toLowerCase() as Kind;
 
   if (kind !== 'png' && kind !== 'pdf') {
-    return NextResponse.json({ error: 'Unknown download type.' }, { status: 400 });
+    return NextResponse.json({ error: 'Unknown download type.' }, { status: 400, headers: NO_STORE });
   }
   if (!isSupabaseConfigured || !isR2Configured) {
-    return NextResponse.json({ error: 'Downloads are not configured yet.' }, { status: 503 });
+    return NextResponse.json({ error: 'Downloads are not configured yet.' }, { status: 503, headers: NO_STORE });
   }
 
   const supabase = createAdminClient();
@@ -44,15 +51,15 @@ export async function GET(
     .maybeSingle();
 
   if (!page || !page.is_published) {
-    return NextResponse.json({ error: 'Coloring page not found.' }, { status: 404 });
+    return NextResponse.json({ error: 'Coloring page not found.' }, { status: 404, headers: NO_STORE });
   }
   if (!page.allow_download) {
-    return NextResponse.json({ error: 'This page is view-only.' }, { status: 403 });
+    return NextResponse.json({ error: 'This page is view-only.' }, { status: 403, headers: NO_STORE });
   }
 
   const settings = await getSettings();
   if (!settings.features.allow_downloads) {
-    return NextResponse.json({ error: 'Downloads are turned off.' }, { status: 403 });
+    return NextResponse.json({ error: 'Downloads are turned off.' }, { status: 403, headers: NO_STORE });
   }
 
   const context = requestContext(request);
@@ -123,6 +130,6 @@ export async function GET(
     });
   } catch (error) {
     console.error('[api/download] failed', slug, kind, error);
-    return NextResponse.json({ error: 'Could not prepare that download.' }, { status: 500 });
+    return NextResponse.json({ error: 'Could not prepare that download.' }, { status: 500, headers: NO_STORE });
   }
 }

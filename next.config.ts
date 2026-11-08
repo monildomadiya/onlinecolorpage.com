@@ -61,10 +61,18 @@ const nextConfig: NextConfig = {
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
         ],
       },
-      {
-        source: '/api/file/:path*',
-        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
-      },
+      /**
+       * No Cache-Control for /api/file here on purpose.
+       *
+       * A headers() entry covers every response on the path, errors included,
+       * and it wins over whatever the route handler set. This used to stamp
+       * `immutable, max-age=1y` onto the route's own 503, so one deploy with
+       * the R2 variables still missing was enough to have Cloudflare serve
+       * "Storage is not configured." in place of the line art for a year.
+       *
+       * The route sets the long cache itself on a 200 and `no-store` on every
+       * error, which is the same thing minus the trap.
+       */
     ];
   },
 };

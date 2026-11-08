@@ -43,8 +43,8 @@ export function Pagination({
   const items = windowed(page, totalPages);
   // Shared glass treatment for every chip that is not the current page.
   const rest =
-    'border border-ink/10 bg-white text-grape-700 hover:-translate-y-0.5 hover:bg-cream-deep';
-  const muted = 'border border-ink/10 bg-white text-ink-soft/35';
+    'border border-edge bg-white text-ink hover:-translate-y-0.5 hover:bg-cream';
+  const muted = 'border border-edge bg-white text-ink-soft/35';
   const chip =
     'grid tap-big place-items-center rounded-full font-display text-sm font-extrabold transition';
 
@@ -78,7 +78,7 @@ export function Pagination({
             key={item}
             href={hrefFor(item)}
             aria-current={item === page ? 'page' : undefined}
-            className={cn(chip, item === page ? 'border border-ink/10 bg-coral text-white' : rest)}
+            className={cn(chip, item === page ? 'border border-edge bg-coral text-white' : rest)}
           >
             {item}
           </Link>

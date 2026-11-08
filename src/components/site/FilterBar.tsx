@@ -55,7 +55,7 @@ export function FilterBar({
     <div className={cn('card-kid p-4', className)}>
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal className="size-4 text-grape-600" aria-hidden />
+          <SlidersHorizontal className="size-4 text-coral" aria-hidden />
           <span className="font-display text-sm font-extrabold text-ink">Filters</span>
         </div>
 
@@ -67,7 +67,7 @@ export function FilterBar({
             id="sort"
             value={sort}
             onChange={(e) => apply('sort', e.target.value)}
-            className="rounded-full border border-ink/10 bg-white px-3.5 py-2 font-display text-sm font-extrabold text-ink focus:border-grape-400 focus:outline-none"
+            className="rounded-full border border-edge bg-white px-3.5 py-2 font-display text-sm font-extrabold text-ink focus:border-coral/45 focus:outline-none"
           >
             {SORTS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -88,8 +88,8 @@ export function FilterBar({
               className={cn(
                 'rounded-full px-3.5 py-2 font-display text-xs font-extrabold transition',
                 difficulty === option.value
-                  ? 'border border-ink/10 bg-coral text-white'
-                  : 'border border-ink/10 bg-white text-ink-soft hover:bg-cream-deep hover:text-ink',
+                  ? 'border border-edge bg-coral text-white'
+                  : 'border border-edge bg-white text-ink-soft hover:border-coral/40 hover:text-ink',
               )}
             >
               {option.label}
@@ -109,12 +109,12 @@ export function FilterBar({
       </div>
 
       {tags.length > 0 && (
-        <div className="no-scrollbar mt-3.5 flex gap-1.5 overflow-x-auto border-t border-ink/10 pt-3.5">
+        <div className="no-scrollbar mt-3.5 flex gap-1.5 overflow-x-auto border-t border-edge pt-3.5">
           {activeTag && (
             <button
               type="button"
               onClick={() => apply('tag', '')}
-              className="shrink-0 rounded-full border border-ink/10 bg-coral px-3 py-1.5 text-xs font-extrabold whitespace-nowrap text-white"
+              className="shrink-0 rounded-full border border-edge bg-coral px-3 py-1.5 text-xs font-extrabold whitespace-nowrap text-white"
             >
               #{activeTag} ✕
             </button>
@@ -127,7 +127,7 @@ export function FilterBar({
                 key={tag}
                 type="button"
                 onClick={() => apply('tag', tag)}
-                className="shrink-0 rounded-full border border-ink/10 bg-white px-3 py-1.5 text-xs font-extrabold whitespace-nowrap text-ink-soft transition hover:bg-cream-deep hover:text-grape-700"
+                className="shrink-0 rounded-full border border-edge bg-white px-3 py-1.5 text-xs font-extrabold whitespace-nowrap text-ink-soft transition hover:border-coral/40 hover:text-coral"
               >
                 #{tag} <span className="opacity-50">{count}</span>
               </button>

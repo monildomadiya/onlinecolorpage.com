@@ -3,6 +3,16 @@
 import { STICKER_GROUPS, STICKER_SIZES } from './constants';
 import { cn } from '@/lib/utils';
 
+const SIZE_LABELS = ['S', 'M', 'L', 'XL'];
+const SIZE_NAMES = ['Tiny', 'Small', 'Big', 'Huge'];
+
+/**
+ * Stickers, shown under the canvas only while the sticker tool is in hand.
+ *
+ * One scrolling line per group rather than a fixed eight-column grid: the
+ * grid overflowed on a phone and left dead space on a desktop, while a track
+ * that scrolls fits any width and keeps the card short.
+ */
 export function StickerTray({
   sticker,
   onSticker,
@@ -17,38 +27,44 @@ export function StickerTray({
   className?: string;
 }) {
   return (
-    <div className={cn('space-y-3', className)}>
-      <div>
-        <p className="mb-1.5 font-display text-[11px] font-extrabold tracking-wide text-ink-soft uppercase">
-          Sticker size
-        </p>
-        <div className="flex items-center gap-2">
-          {STICKER_SIZES.map((value, i) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => onSize(value)}
-              aria-pressed={size === value}
-              aria-label={['Tiny', 'Small', 'Big', 'Huge'][i]}
-              className={cn(
-                'tap-big grid flex-1 place-items-center rounded-2xl border font-display text-xs font-extrabold transition',
-                size === value
-                  ? 'border-ink/10 bg-coral text-white'
-                  : 'border-ink/10 bg-white text-ink-soft hover:-translate-y-0.5 hover:bg-cream-deep hover:text-ink',
-              )}
-            >
-              {['S', 'M', 'L', 'XL'][i]}
-            </button>
-          ))}
+    <div className={cn('min-w-0 space-y-3', className)}>
+      <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-3">
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="text-[0.7rem] font-semibold tracking-[0.12em] text-ink-soft uppercase">
+            Size
+          </span>
+          <div className="flex items-center gap-1.5">
+            {STICKER_SIZES.map((value, i) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => onSize(value)}
+                aria-pressed={size === value}
+                aria-label={SIZE_NAMES[i]}
+                className={cn(
+                  'grid size-9 place-items-center rounded-full border text-xs font-semibold transition',
+                  size === value
+                    ? 'border-transparent bg-coral text-white'
+                    : 'border-edge bg-white text-ink-soft hover:text-coral',
+                )}
+              >
+                {SIZE_LABELS[i]}
+              </button>
+            ))}
+          </div>
         </div>
+
+        <p className="min-w-0 flex-1 basis-56 text-xs text-ink-soft">
+          Pick a sticker, then tap the picture to place it.
+        </p>
       </div>
 
       {STICKER_GROUPS.map((group) => (
-        <div key={group.label}>
-          <p className="mb-1.5 font-display text-[11px] font-extrabold tracking-wide text-ink-soft uppercase">
+        <div key={group.label} className="flex min-w-0 items-center gap-2">
+          <span className="w-14 shrink-0 text-[0.7rem] font-semibold tracking-[0.12em] text-ink-soft uppercase">
             {group.label}
-          </p>
-          <div className="grid grid-cols-8 gap-1.5">
+          </span>
+          <div className="no-scrollbar -my-1 flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-1">
             {group.items.map((glyph) => (
               <button
                 key={glyph}
@@ -57,10 +73,10 @@ export function StickerTray({
                 aria-pressed={sticker === glyph}
                 aria-label={`Sticker ${glyph}`}
                 className={cn(
-                  'grid aspect-square place-items-center rounded-xl border text-xl transition hover:scale-110',
+                  'grid size-9 shrink-0 place-items-center rounded-full border text-lg transition hover:scale-110',
                   sticker === glyph
-                    ? 'border-grape-400/60 bg-grape-100/70 shadow-[0_0_0_2px_rgb(139_79_245_/_0.35)]'
-                    : 'border-ink/10 bg-white hover:bg-cream-deep',
+                    ? 'border-coral bg-coral/10'
+                    : 'border-edge bg-white hover:border-coral/40',
                 )}
               >
                 <span aria-hidden>{glyph}</span>
@@ -69,10 +85,6 @@ export function StickerTray({
           </div>
         </div>
       ))}
-
-      <p className="rounded-2xl border border-sunny/40 bg-sunny/15 px-3 py-2 text-xs font-bold text-ink-soft">
-        Tip: pick a sticker, then tap the picture to place it. Undo removes the last one.
-      </p>
     </div>
   );
 }

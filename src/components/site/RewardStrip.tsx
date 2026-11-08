@@ -34,7 +34,7 @@ export function RewardStrip({ className }: { className?: string }) {
     <section
       aria-label="Your rewards"
       className={cn(
-        'glass mt-10 overflow-hidden rounded-[2rem] bg-gradient-to-r from-sunny/20 via-coral/12 to-grape-300/25 p-5',
+        'glass mt-10 overflow-hidden rounded-[2rem] bg-gradient-to-r from-butter/18 via-blush/14 to-lilac/18 p-5',
         className,
       )}
     >
@@ -42,7 +42,7 @@ export function RewardStrip({ className }: { className?: string }) {
         <div className="flex items-center gap-3">
           <span
             aria-hidden
-            className="grid size-11 shrink-0 place-items-center rounded-2xl border border-ink/10 bg-butter text-white"
+            className="grid size-11 shrink-0 place-items-center rounded-2xl border border-edge bg-butter text-white"
           >
             <Medal className="size-6" />
           </span>
@@ -66,7 +66,7 @@ export function RewardStrip({ className }: { className?: string }) {
                 title={has ? badge.label : `${badge.label} - finish ${badge.need} pages`}
                 className={cn(
                   'grid size-10 place-items-center rounded-2xl border transition',
-                  has ? 'border-ink/10 bg-white' : 'border-ink/10 bg-white opacity-40 grayscale',
+                  has ? 'border-edge bg-white' : 'border-edge bg-white opacity-40 grayscale',
                 )}
               >
                 <badge.icon className="size-5" aria-hidden />
@@ -80,7 +80,7 @@ export function RewardStrip({ className }: { className?: string }) {
 
         <Link
           href="/my-art"
-          className="ml-auto rounded-full border border-ink/10 bg-white px-4 py-2.5 font-display text-sm font-extrabold text-grape-700 transition hover:-translate-y-0.5 hover:bg-cream-deep"
+          className="ml-auto rounded-full border border-edge bg-white px-4 py-2.5 font-display text-sm font-extrabold text-ink transition hover:-translate-y-0.5 hover:bg-cream"
         >
           My sticker book →
         </Link>
@@ -94,7 +94,7 @@ export function RewardStrip({ className }: { className?: string }) {
               {rewards.finished.length}/{next.need}
             </span>
           </div>
-          <div className="mt-1.5 h-2.5 overflow-hidden rounded-full border border-ink/10 bg-white">
+          <div className="mt-1.5 h-2.5 overflow-hidden rounded-full border border-edge bg-white">
             <div
               className="h-full rounded-full bg-coral shadow-[0_0_12px_rgb(139_79_245_/_0.6)] transition-[width] duration-700"
               style={{ width: `${Math.max(progress, 4)}%` }}

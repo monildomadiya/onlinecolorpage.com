@@ -14,6 +14,8 @@ import {
   BARRIER_INK,
   BRUSH_SIZES,
   CLOSE_GAPS,
+  CORE_INK,
+  FILL_BLEED,
   FILL_TOLERANCE,
   MAX_CANVAS_SIDE,
   STAMP_SHAPES,
@@ -27,6 +29,13 @@ export interface LineArt {
   lineCanvas: HTMLCanvasElement;
   /** One byte per pixel: 1 = outline, flood fill stops here. */
   mask: Uint8Array;
+  /**
+   * One byte per pixel: how much ink is on it, 0 (paper) to 255 (solid line).
+   * Same value as the line layer's alpha. The fill reads it to tell a soft
+   * anti-aliased edge, which it may paint under, from the core of a line,
+   * which it may not.
+   */
+  ink: Uint8Array;
 }
 
 export interface Point {
@@ -82,9 +91,23 @@ function closeGaps(mask: Uint8Array, width: number, height: number): void {
 /**
  * Rasterises the uploaded artwork into the line layer + barrier mask.
  *
- * Every pixel's "ink" value is `255 - luminance`, which becomes its alpha. Pure
- * white paper drops to alpha 0 and disappears; black lines stay opaque; grey
- * anti-aliasing stays soft. Coloured outlines keep their hue.
+ * The artwork arrives as ink printed on white paper, and what we want is the
+ * ink on its own so a fill can sit behind it. So each pixel is un-composited
+ * from the white it was drawn over:
+ *
+ *   alpha  = how far the darkest channel is from white
+ *   colour = the pixel with that white taken back out again
+ *
+ * Taking the white out is the part that matters. Reading alpha alone and
+ * keeping the original RGB leaves a half-transparent *light grey* pixel along
+ * every anti-aliased edge, and light grey over a filled shape is precisely the
+ * white rim this function exists to avoid. Un-compositing turns that same edge
+ * into black at half alpha, which darkens the join instead of bleaching it.
+ *
+ * Alpha comes from the darkest channel rather than perceived luminance so that
+ * a saturated outline - a red or blue line - stays fully opaque in its own
+ * hue, where a luminance reading would make it 70% transparent and wash it
+ * out over the colour underneath.
  */
 export function prepareLineArt(
   source: HTMLImageElement | ImageBitmap,
@@ -111,27 +134,55 @@ export function prepareLineArt(
   const image = ctx.getImageData(0, 0, width, height);
   const data = image.data;
   const mask = new Uint8Array(width * height);
+  const ink = new Uint8Array(width * height);
+
+  const byte = (v: number) => (v < 0 ? 0 : v > 255 ? 255 : Math.round(v));
 
   for (let p = 0, i = 0; i < data.length; i += 4, p++) {
-    const alpha = data[i + 3];
+    const sourceAlpha = data[i + 3];
 
-    let ink: number;
-    if (alpha === 0) {
-      ink = 0; // fully transparent source pixel is paper
-    } else {
-      ink = 255 - luminance(data[i], data[i + 1], data[i + 2]);
-      if (alpha < 255) ink = (ink * alpha) / 255;
+    if (sourceAlpha === 0) {
+      data[i + 3] = 0; // a transparent source pixel is paper
+      continue;
     }
 
-    const value = ink < 0 ? 0 : ink > 255 ? 255 : Math.round(ink);
-    data[i + 3] = value;
-    if (value >= BARRIER_INK) mask[p] = 1;
+    let r = data[i];
+    let g = data[i + 1];
+    let b = data[i + 2];
+
+    // Lay a partly transparent source over white first, so a PNG with its own
+    // alpha and an ordinary white-background scan go down the same path.
+    if (sourceAlpha < 255) {
+      const t = sourceAlpha / 255;
+      const w = 255 * (1 - t);
+      r = r * t + w;
+      g = g * t + w;
+      b = b * t + w;
+    }
+
+    const alpha = byte(255 - Math.min(r, g, b));
+
+    if (alpha === 0) {
+      data[i + 3] = 0;
+      continue;
+    }
+
+    // Un-composite from the white underneath: c = (s - white * (1 - a)) / a.
+    const white = 255 - alpha;
+    const k = 255 / alpha;
+    data[i] = byte((r - white) * k);
+    data[i + 1] = byte((g - white) * k);
+    data[i + 2] = byte((b - white) * k);
+    data[i + 3] = alpha;
+
+    ink[p] = alpha;
+    if (alpha >= BARRIER_INK) mask[p] = 1;
   }
 
   ctx.putImageData(image, 0, 0);
   if (CLOSE_GAPS) closeGaps(mask, width, height);
 
-  return { width, height, lineCanvas, mask };
+  return { width, height, lineCanvas, mask, ink };
 }
 
 /** Creates the paint layer, pre-filled with white so it reads as paper. */
@@ -160,14 +211,14 @@ export function createPaintCanvas(width: number, height: number): HTMLCanvasElem
  */
 export function floodFill(
   ctx: CanvasRenderingContext2D,
-  mask: Uint8Array,
-  width: number,
-  height: number,
+  art: LineArt,
   startX: number,
   startY: number,
   color: string,
   tolerance = FILL_TOLERANCE,
 ): boolean {
+  const { width, height, mask, ink } = art;
+
   const sx = Math.floor(startX);
   const sy = Math.floor(startY);
   if (sx < 0 || sy < 0 || sx >= width || sy >= height) return false;
@@ -201,6 +252,13 @@ export function floodFill(
   const stack: number[] = [sx, sy];
   let painted = 0;
 
+  // Bounding box of the region, so the bleed pass below only has to walk the
+  // part of the image the fill actually touched.
+  let minX = width;
+  let maxX = -1;
+  let minY = height;
+  let maxY = -1;
+
   while (stack.length > 0) {
     const y = stack.pop()!;
     let x = stack.pop()!;
@@ -223,6 +281,11 @@ export function floodFill(
       data[i + 3] = 255;
       done[p] = 1;
       painted++;
+
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
 
       if (y > 0) {
         if (matches(p - width)) {
@@ -252,6 +315,57 @@ export function floodFill(
   }
 
   if (painted === 0) return false;
+
+  /* ---- run the colour under the outline ---------------------------- *
+   * The barrier sits on the anti-aliased edge of the line, and closeGaps
+   * pushes it one pixel further out again, so the fill has just stopped a
+   * pixel or two short of the ink all the way around the shape. Those pixels
+   * are still white paper, and the line pixels above them are far too
+   * transparent to hide it - that is the white rim you see between a filled
+   * shape and its outline.
+   *
+   * So grow the filled region into the barrier a few pixels, but never
+   * through a pixel at full ink: the core of the line stays a wall, which is
+   * what stops colour seeping into the shape on the other side.
+   * ------------------------------------------------------------------ */
+  const x0 = Math.max(0, minX - FILL_BLEED);
+  const x1 = Math.min(width - 1, maxX + FILL_BLEED);
+  const y0 = Math.max(0, minY - FILL_BLEED);
+  const y1 = Math.min(height - 1, maxY + FILL_BLEED);
+
+  for (let pass = 0; pass < FILL_BLEED; pass++) {
+    const edge: number[] = [];
+
+    for (let y = y0; y <= y1; y++) {
+      const row = y * width;
+      for (let x = x0; x <= x1; x++) {
+        const p = row + x;
+        if (done[p] || !mask[p] || ink[p] >= CORE_INK) continue;
+
+        if (
+          (x > 0 && done[p - 1]) ||
+          (x < width - 1 && done[p + 1]) ||
+          (y > 0 && done[p - width]) ||
+          (y < height - 1 && done[p + width])
+        ) {
+          edge.push(p);
+        }
+      }
+    }
+
+    if (edge.length === 0) break;
+
+    // Applied after the sweep, so one pass grows the region by exactly one
+    // pixel rather than racing ahead across the row.
+    for (const p of edge) {
+      const i = p * 4;
+      data[i] = r;
+      data[i + 1] = g;
+      data[i + 2] = b;
+      data[i + 3] = 255;
+      done[p] = 1;
+    }
+  }
 
   ctx.putImageData(image, 0, 0);
   return true;

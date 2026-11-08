@@ -45,7 +45,7 @@ export function SetupNotice() {
           ))}
           <li>
             Run{' '}
-            <code className="rounded-md border border-ink/10 bg-white px-1.5 py-0.5">
+            <code className="rounded-md border border-edge bg-white px-1.5 py-0.5">
               npm run check
             </code>{' '}
             to verify the lot.

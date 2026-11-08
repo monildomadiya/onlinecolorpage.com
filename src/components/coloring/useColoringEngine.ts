@@ -391,7 +391,7 @@ export function useColoringEngine({
       const ctx = paint.getContext('2d', { willReadFrequently: true })!;
       snapshotBefore();
 
-      const filled = floodFill(ctx, art.mask, art.width, art.height, point.x, point.y, color);
+      const filled = floodFill(ctx, art, point.x, point.y, color);
 
       if (filled) {
         commitSnapshot();

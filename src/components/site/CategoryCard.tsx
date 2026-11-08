@@ -40,8 +40,11 @@ export function CategoryCard({
         ) : (
           <span
             aria-hidden
-            className="grid size-full place-items-center font-display text-5xl text-ink/80 transition-transform duration-500 group-hover:scale-105"
-            style={{ background: `color-mix(in srgb, ${accent} 38%, white)` }}
+            className="grid size-full place-items-center font-display text-5xl transition-transform duration-500 group-hover:scale-105"
+            style={{
+              background: `color-mix(in srgb, ${accent} 20%, white)`,
+              color: `color-mix(in srgb, ${accent} 75%, var(--color-ink))`,
+            }}
           >
             {category.name.charAt(0).toUpperCase()}
           </span>
@@ -78,8 +81,11 @@ export function CategoryRail({ categories }: { categories: Category[] }) {
           <Link
             key={category.slug}
             href={`/category/${category.slug}`}
-            className="shrink-0 rounded-[var(--radius-btn)] px-4 py-2.5 text-sm font-medium whitespace-nowrap text-ink transition hover:-translate-y-0.5"
-            style={{ background: `color-mix(in srgb, ${accent} 38%, white)` }}
+            className="shrink-0 rounded-full border px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink shadow-[var(--shadow-card)] transition hover:-translate-y-0.5"
+            style={{
+              background: `color-mix(in srgb, ${accent} 16%, white)`,
+              borderColor: `color-mix(in srgb, ${accent} 38%, white)`,
+            }}
           >
             {category.name}
           </Link>

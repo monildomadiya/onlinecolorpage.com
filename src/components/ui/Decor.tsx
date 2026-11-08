@@ -13,7 +13,7 @@ export function Blobs({ className }: { className?: string }) {
       aria-hidden
       className={cn('pointer-events-none absolute inset-0 overflow-hidden', className)}
     >
-      <div className="absolute -top-28 -left-24 size-80 rounded-full bg-grape-400/35 blur-[90px] animate-float" />
+      <div className="absolute -top-28 -left-24 size-80 rounded-full bg-lilac/35 blur-[90px] animate-float" />
       <div
         className="absolute top-6 -right-24 size-96 rounded-full bg-sky/30 blur-[100px] animate-float"
         style={{ animationDelay: '1.6s' }}

@@ -155,14 +155,14 @@ export function FinishCard({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="tap-big absolute top-2 right-2 grid place-items-center rounded-2xl text-ink-soft transition hover:bg-cream-deep"
+            className="tap-big absolute top-2 right-2 grid place-items-center rounded-2xl text-ink-soft transition hover:bg-cream"
           >
             <X className="size-5" aria-hidden />
           </button>
 
           <span
             aria-hidden
-            className="mx-auto grid size-14 place-items-center rounded-3xl border border-ink/10 bg-butter text-white"
+            className="mx-auto grid size-14 place-items-center rounded-3xl border border-edge bg-butter text-white"
           >
             <PartyPopper className="size-7" />
           </span>
@@ -176,7 +176,7 @@ export function FinishCard({
             <img
               src={preview}
               alt="Your finished coloring"
-              className="mx-auto mt-4 max-h-56 w-auto rounded-2xl border border-ink/10 bg-white object-contain shadow-[0_0_0_1px_rgb(28_22_48_/_0.08),0_14px_34px_-16px_rgb(60_36_120_/_0.55)]"
+              className="mx-auto mt-4 max-h-56 w-auto rounded-2xl border border-edge bg-white object-contain shadow-[var(--shadow-card-lift)]"
             />
           )}
 

@@ -1,14 +1,16 @@
 import type { Metadata, Viewport } from 'next';
-import { Chango, Rubik } from 'next/font/google';
+import { Baloo_2, Rubik } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { buildRootMetadata } from '@/lib/seo/metadata';
 import { publicEnv } from '@/lib/env';
 
-const chango = Chango({
+// Baloo 2 is the display face: rounded, very heavy at 800, and friendly
+// enough for a kids' site without tipping into comic lettering.
+const baloo = Baloo_2({
   subsets: ['latin'],
-  weight: ['400'],
-  variable: '--font-chango',
+  weight: ['600', '700', '800'],
+  variable: '--font-baloo',
   display: 'swap',
 });
 
@@ -28,13 +30,13 @@ export const viewport: Viewport = {
   initialScale: 1,
   // Kids pinch-zoom the canvas, so zooming must stay available.
   maximumScale: 5,
-  themeColor: '#f9f6f3',
+  themeColor: '#ffefe4',
   colorScheme: 'light',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${chango.variable} ${rubik.variable}`}>
+    <html lang="en" className={`${baloo.variable} ${rubik.variable}`}>
       <head>
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>

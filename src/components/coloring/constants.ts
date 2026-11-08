@@ -25,12 +25,30 @@ export type BrushId = 'marker' | 'crayon' | 'rainbow' | 'glitter' | 'stamp';
 export const MAX_CANVAS_SIDE = 1400;
 
 /**
- * A pixel blocks flood fill when its "ink alpha" (255 - luminance) is at least
- * this. 100 => anything darker than ~61% grey is treated as a line. Soft
- * anti-aliased edges below it get painted over, then the line layer re-draws on
- * top, which is what makes fills look clean right up to the outline.
+ * A pixel blocks flood fill when its "ink alpha" (how far its darkest channel
+ * sits from white) is at least this. 100 => anything darker than ~61% grey is
+ * treated as a line.
  */
 export const BARRIER_INK = 100;
+
+/**
+ * Ink at or above this is the solid core of an outline, and the fill stops
+ * there. Set high on purpose: a pixel at 230 ink is still 10% see-through, so
+ * leaving white paper under it shows as a pale thread along the line. Painting
+ * under it cannot leak anywhere - the bleed only ever touches pixels that are
+ * already barrier, never the open region on the other side.
+ */
+export const CORE_INK = 235;
+
+/**
+ * How many pixels a fill runs *under* the outline once the region is done.
+ *
+ * The barrier sits on the anti-aliased edge of the line and CLOSE_GAPS pushes
+ * it one pixel further out again, so a fill that stopped dead at the barrier
+ * would leave a rim of untouched white paper around every shape. Two pixels
+ * covers the soft edge plus the gap-closing ring.
+ */
+export const FILL_BLEED = 2;
 
 /** Grow the barrier mask by 1px to close hairline gaps that leak fills. */
 export const CLOSE_GAPS = true;

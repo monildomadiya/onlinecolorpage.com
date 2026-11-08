@@ -49,9 +49,9 @@ export function SearchBox({
         onChange={(e) => setValue(e.target.value)}
         placeholder={placeholder}
         enterKeyHint="search"
-        className="h-13 w-full rounded-[var(--radius-btn)] border border-ink/12 bg-white pr-24 pl-12 text-base text-ink transition placeholder:text-ink-soft/55 focus:border-ink/35 focus:outline-none"
+        className="h-14 w-full rounded-full border border-edge bg-white pr-26 pl-12 text-base text-ink shadow-[var(--shadow-card)] transition placeholder:text-ink-soft/55 focus:border-coral/45 focus:outline-none"
       />
-      <button type="submit" className="btn-kid absolute top-2 right-2 h-9 px-4 py-0 text-sm">
+      <button type="submit" className="btn-kid absolute top-2 right-2 h-10 px-5 py-0 text-sm">
         Go
       </button>
     </form>

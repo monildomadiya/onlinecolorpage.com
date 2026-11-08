@@ -37,7 +37,7 @@ export function Prose({
           '[&_h3]:mt-5 [&_h3]:font-display [&_h3]:text-base [&_h3]:font-extrabold [&_h3]:text-ink',
           '[&_ul]:list-disc [&_ul]:space-y-1.5 [&_ul]:pl-6',
           '[&_ol]:list-decimal [&_ol]:space-y-1.5 [&_ol]:pl-6',
-          '[&_a]:font-extrabold [&_a]:text-grape-600 [&_a]:underline [&_a]:underline-offset-2 dark:[&_a]:text-grape-300',
+          '[&_a]:font-semibold [&_a]:text-coral [&_a]:underline [&_a]:underline-offset-2',
           '[&_strong]:font-semibold [&_strong]:text-ink',
           className,
         )}

@@ -71,7 +71,7 @@ export default async function SearchRoute({ searchParams }: Props) {
               <a
                 key={tag}
                 href={`/search?q=${encodeURIComponent(tag)}`}
-                className="rounded-full border border-ink/10 bg-white px-3.5 py-2 text-xs font-extrabold text-grape-700 transition hover:-translate-y-0.5 hover:bg-cream-deep"
+                className="rounded-full border border-edge bg-white px-3.5 py-2 text-xs font-extrabold text-ink transition hover:-translate-y-0.5 hover:bg-cream"
               >
                 {tag}
               </a>

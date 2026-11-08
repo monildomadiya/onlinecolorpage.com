@@ -46,6 +46,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 const DIFFICULTY_LABEL = { easy: 'Easy', medium: 'Medium', hard: 'Tricky' } as const;
 
+const TIPS = [
+  [PaintBucket, 'Tap the bucket, pick a colour, then tap inside a shape to fill it.'],
+  [Brush, 'Switch to Draw for shading - try the crayon and glitter styles.'],
+  [ZoomIn, 'Pinch to zoom in on the tiny bits, then use two fingers to move around.'],
+  [Undo2, 'Made a mistake? Undo takes back the last step.'],
+  [Save, 'Your work saves itself on this device, so you can finish it later.'],
+] as const;
+
 export default async function ColorPage({ params }: Props) {
   const { slug } = await params;
   const [page, settings] = await Promise.all([getPageBySlug(slug), getSettings()]);
@@ -73,23 +81,25 @@ export default async function ColorPage({ params }: Props) {
       />
       <ViewTracker slug={page.slug} />
 
-      <div className="mx-auto max-w-7xl px-4 pt-6 pb-16 sm:px-6">
+      {/* One narrow column the whole way down, so the artwork, the controls and
+          everything written about the page share a single measure. */}
+      <div className="mx-auto max-w-4xl min-w-0 px-4 pt-5 pb-16 sm:px-6">
         <Breadcrumbs trail={trail} />
 
         <header className="mb-5">
-          <h1 className="font-display text-3xl font-extrabold text-ink sm:text-4xl">
+          <h1 className="font-display text-[1.75rem] leading-tight text-ink sm:text-4xl">
             {page.title}
           </h1>
 
-          <div className="mt-2.5 flex flex-wrap items-center gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             {page.category && (
-              <Chip color={page.category.color ?? '#8b4ff5'}>
+              <Chip color={page.category.color ?? 'var(--color-lilac)'}>
                 {page.category.emoji} {page.category.name}
               </Chip>
             )}
-            <Chip color="#0EA5E9">{DIFFICULTY_LABEL[page.difficulty]}</Chip>
-            <Chip color="#F97316">{ageLabel(page.age_min, page.age_max)}</Chip>
-            <span className="text-xs font-bold text-ink-soft/70">
+            <Chip color="var(--color-sky)">{DIFFICULTY_LABEL[page.difficulty]}</Chip>
+            <Chip color="var(--color-butter)">{ageLabel(page.age_min, page.age_max)}</Chip>
+            <span className="text-xs text-ink-soft">
               {formatNumber(page.view_count)} views · {formatNumber(page.color_count)} coloured ·{' '}
               {formatNumber(page.download_count)} downloads
             </span>
@@ -112,14 +122,14 @@ export default async function ColorPage({ params }: Props) {
             downloadsEnabled={canDownload}
           />
         ) : (
-          <div className="card-kid mx-auto max-w-2xl overflow-hidden p-4">
+          <div className="panel overflow-hidden p-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={publicUrl(page.image_key)}
               alt={`${page.title} coloring page`}
               className="mx-auto h-auto w-full rounded-2xl"
             />
-            <p className="mt-3 text-center text-sm font-bold text-ink-soft">
+            <p className="mt-3 text-center text-sm text-ink-soft">
               This page is print-only. Download the PDF and colour it with real crayons!
             </p>
           </div>
@@ -127,23 +137,35 @@ export default async function ColorPage({ params }: Props) {
 
         {/* ------------------------ downloads ------------------------ */}
         {canDownload && (
-          <section className="no-print mt-8" aria-labelledby="downloads">
-            <h2 id="downloads" className="font-display text-xl font-extrabold text-ink">
-              Print it at home
-            </h2>
-            <p className="mt-1 text-sm font-semibold text-ink-soft">
-              Grab the blank outline and colour it with real crayons - the PDF is already sized for
-              A4 with safe margins.
-            </p>
+          <section
+            className="panel no-print mt-6 flex flex-wrap items-center gap-x-6 gap-y-4 p-5 sm:p-6"
+            aria-labelledby="downloads"
+          >
+            <div className="min-w-0 flex-1 basis-64">
+              <h2 id="downloads" className="font-display text-lg text-ink">
+                Rather use real crayons?
+              </h2>
+              <p className="mt-1 text-sm text-ink-soft">
+                The blank outline is already sized for A4 with safe margins.
+              </p>
+            </div>
 
-            <div className="mt-4 flex flex-wrap gap-3">
-              <a href={downloadUrl(page.slug, 'pdf')} className="btn-kid btn-coral" download>
-                <Printer className="size-5" aria-hidden />
-                Download printable PDF
+            <div className="flex flex-wrap gap-2">
+              <a
+                href={downloadUrl(page.slug, 'pdf')}
+                className="btn-kid btn-coral px-5 py-2.5 text-sm"
+                download
+              >
+                <Printer className="size-4.5" aria-hidden />
+                Printable PDF
               </a>
-              <a href={downloadUrl(page.slug, 'png')} className="btn-kid btn-ghost" download>
-                <Download className="size-5" aria-hidden />
-                Download PNG outline
+              <a
+                href={downloadUrl(page.slug, 'png')}
+                className="btn-kid btn-ghost px-5 py-2.5 text-sm"
+                download
+              >
+                <Download className="size-4.5" aria-hidden />
+                PNG outline
               </a>
             </div>
           </section>
@@ -152,27 +174,25 @@ export default async function ColorPage({ params }: Props) {
         <AdSlot slot="below_canvas" />
 
         {/* ------------------------ about this page ------------------------ */}
-        <section className="mt-10 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-          <div className="card-kid p-6">
-            <h2 className="font-display text-xl font-extrabold text-ink">
-              About this coloring page
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed font-semibold text-ink-soft">
+        <section className="mt-6 grid items-start gap-4 md:grid-cols-[1.35fr_1fr]">
+          <div className="panel p-5 sm:p-6">
+            <h2 className="font-display text-lg text-ink">About this coloring page</h2>
+            <p className="mt-2 text-sm leading-relaxed text-ink-soft">
               {page.description ||
                 `Colour the ${page.title.toLowerCase()} coloring page right here in your browser, or print it out and use real crayons. Tap the bucket tool and any colour to fill a shape instantly, or switch to a brush for free drawing. When you are happy with it, save a PNG or print it for the fridge.`}
             </p>
 
             {page.tags.length > 0 && (
               <div className="mt-5">
-                <p className="flex items-center gap-1.5 font-display text-[11px] font-extrabold tracking-wide text-ink-soft uppercase">
+                <p className="flex items-center gap-1.5 text-[0.7rem] font-semibold tracking-[0.12em] text-ink-soft uppercase">
                   <Tag className="size-3.5" aria-hidden /> Tags
                 </p>
-                <div className="mt-2 flex flex-wrap gap-2">
+                <div className="mt-2.5 flex flex-wrap gap-2">
                   {page.tags.map((tag) => (
                     <Link
                       key={tag}
                       href={`/coloring-pages?tag=${encodeURIComponent(tag)}`}
-                      className="rounded-full border border-ink/10 bg-white px-3 py-1.5 text-xs font-extrabold text-ink-soft transition hover:bg-cream-deep hover:text-grape-700"
+                      className="rounded-full border border-edge bg-white px-3 py-1.5 text-xs font-semibold text-ink-soft transition hover:border-coral/40 hover:text-coral"
                     >
                       #{tag}
                     </Link>
@@ -182,32 +202,16 @@ export default async function ColorPage({ params }: Props) {
             )}
           </div>
 
-          <aside className="glass border-mint/55 p-6">
-            <h2
-              className="band-title text-xl text-ink"
-              style={{ ['--band' as string]: 'var(--color-mint)' }}
-            >
-              Colouring tips
-            </h2>
-            <ul className="mt-4 space-y-2.5 text-sm font-semibold text-ink-soft">
-              {(
-                [
-                  [
-                    PaintBucket,
-                    'Tap the bucket, pick a colour, then tap inside a shape to fill it.',
-                  ],
-                  [Brush, 'Switch to the brush for shading - try the crayon and glitter styles.'],
-                  [
-                    ZoomIn,
-                    'Pinch to zoom in on the tiny bits, then use two fingers to move around.',
-                  ],
-                  [Undo2, 'Made a mistake? Undo takes back the last step.'],
-                  [Save, 'Your work saves itself on this device, so you can finish it later.'],
-                ] as const
-              ).map(([Icon, text]) => (
+          <aside
+            className="panel panel-wash p-5 sm:p-6"
+            style={{ ['--wash' as string]: 'var(--color-mint)' }}
+          >
+            <h2 className="font-display text-lg text-ink">Colouring tips</h2>
+            <ul className="mt-4 space-y-3 text-sm text-ink-soft">
+              {TIPS.map(([Icon, text]) => (
                 <li key={text} className="flex gap-2.5">
                   <Icon className="mt-0.5 size-4 shrink-0 text-mint-dark" aria-hidden />
-                  <span>{text}</span>
+                  <span className="leading-relaxed">{text}</span>
                 </li>
               ))}
             </ul>
@@ -216,10 +220,11 @@ export default async function ColorPage({ params }: Props) {
 
         {/* ------------------------ related ------------------------ */}
         {related.length > 0 && (
-          <section className="mt-14">
+          <section className="mt-12">
             <SectionHeading
               icon={Images}
-              band="var(--color-coral)"
+              eyebrow="Keep going"
+              band="var(--color-coral-soft)"
               title="You might also like"
               subtitle={page.category ? `More from ${page.category.name}` : 'More pages to colour'}
               href={page.category ? `/category/${page.category.slug}` : '/coloring-pages'}

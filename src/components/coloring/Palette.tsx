@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Pipette, Plus } from 'lucide-react';
-import { PALETTE_ROWS } from './constants';
+import { Check, ChevronDown, Pipette, Plus } from 'lucide-react';
+import { PALETTE_ROWS, QUICK_COLORS } from './constants';
 import { luminance, hexToRgb } from './engine';
 import { cn } from '@/lib/utils';
 
@@ -11,14 +11,17 @@ function isLight(hex: string): boolean {
   return luminance(r, g, b) > 186;
 }
 
+/** `fill` stretches the swatch to its grid cell; otherwise it is a fixed 36px. */
 function Swatch({
   value,
   active,
   onPick,
+  fill = false,
 }: {
   value: string;
   active: boolean;
   onPick: (color: string) => void;
+  fill?: boolean;
 }) {
   return (
     <button
@@ -28,10 +31,9 @@ function Swatch({
       title={value}
       onClick={() => onPick(value)}
       className={cn(
-        'relative size-9 shrink-0 rounded-xl transition-transform sm:size-8',
-        'hover:scale-110 active:scale-95',
-        active &&
-          'scale-110 ring-2 ring-white shadow-[0_0_0_3px_rgb(28_22_48_/_0.45),0_6px_16px_-6px_rgb(28_22_48_/_0.5)]',
+        'relative rounded-full transition-transform hover:scale-110 active:scale-95',
+        fill ? 'aspect-square w-full' : 'size-9 shrink-0',
+        active && 'scale-110 ring-2 ring-coral ring-offset-2 ring-offset-white',
         isLight(value) && 'border border-black/10',
       )}
       style={{ background: value }}
@@ -51,7 +53,20 @@ function Swatch({
   );
 }
 
-export function Palette({
+/**
+ * The colour picker, as one card under the canvas.
+ *
+ * Twelve bright colours plus whatever the artwork suggests sit on a single
+ * scrolling line - that covers almost every pick a child makes. The rest of
+ * the box is behind "All colours", where it opens into a grid that reflows to
+ * whatever width it is given, so the same component works at 320px and on a
+ * desktop without a second layout.
+ *
+ * Every scrolling track here is wrapped in a `min-w-0` flex child on purpose:
+ * a horizontal scroller whose parent can grow will push the whole page wider
+ * instead of scrolling.
+ */
+export function ColorPicker({
   color,
   onPick,
   suggested = [],
@@ -67,242 +82,119 @@ export function Palette({
   className?: string;
 }) {
   const [custom, setCustom] = useState(color);
+  const [open, setOpen] = useState(false);
   const [recent, setRecent] = useState<string[]>([]);
+
+  const quick = [...new Set([...suggested, ...QUICK_COLORS])];
 
   function pick(next: string) {
     onPick(next);
-    setRecent((prev) => [next, ...prev.filter((c) => c !== next)].slice(0, 8));
+    setRecent((prev) => [next, ...prev.filter((c) => c !== next)].slice(0, 10));
   }
 
   return (
-    <div className={cn('space-y-3', className)}>
-      <div className="flex items-center gap-2">
+    <div className={cn('min-w-0', className)}>
+      {/* One line on a tablet and up. On a phone the colours drop to a full
+          row of their own (order-3 + basis-full), because sharing the line
+          with four controls left them about two swatches of track. */}
+      <div className="flex min-w-0 flex-wrap items-center gap-2.5">
         <span
           aria-hidden
-          className="size-11 shrink-0 rounded-2xl border-2 border-white shadow-[0_0_0_1px_rgb(28_22_48_/_0.12),0_10px_22px_-10px_rgb(28_22_48_/_0.55)]"
+          title={color}
+          className="order-1 size-10 shrink-0 rounded-full border-2 border-white shadow-[0_0_0_1px_var(--color-edge)]"
           style={{ background: color }}
         />
-        <div className="min-w-0 flex-1">
-          <p className="font-display text-sm font-extrabold text-ink">Your colour</p>
-          <p className="font-mono text-xs font-bold text-ink-soft">{color}</p>
+
+        <div className="no-scrollbar order-3 -my-1 flex min-w-0 basis-full items-center gap-2 overflow-x-auto py-1 sm:order-2 sm:flex-1 sm:basis-0">
+          {quick.map((value) => (
+            <Swatch key={value} value={value} active={color === value} onPick={pick} />
+          ))}
         </div>
 
-        <label
-          className="tap-big grid cursor-pointer place-items-center rounded-2xl border border-ink/10 bg-white text-grape-700 transition hover:bg-cream-deep"
-          title="Pick any colour"
-        >
-          <Plus className="size-5" aria-hidden />
-          <span className="sr-only">Choose a custom colour</span>
-          <input
-            type="color"
-            value={custom}
-            onChange={(e) => {
-              setCustom(e.target.value);
-              pick(e.target.value.toUpperCase());
-            }}
-            className="sr-only"
-          />
-        </label>
-
-        <button
-          type="button"
-          onClick={onToggleEyedropper}
-          aria-pressed={eyedropper}
-          title="Copy a colour from the picture"
-          className={cn(
-            'tap-big grid place-items-center rounded-2xl border transition',
-            eyedropper
-              ? 'border-ink/10 bg-coral text-white'
-              : 'border-ink/10 bg-white text-grape-700 hover:bg-cream-deep',
-          )}
-        >
-          <Pipette className="size-5" aria-hidden />
-          <span className="sr-only">Eyedropper</span>
-        </button>
-      </div>
-
-      {suggested.length > 0 && (
-        <div>
-          <p className="mb-1.5 font-display text-[11px] font-extrabold tracking-wide text-ink-soft uppercase">
-            Suggested for this picture
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {suggested.map((value) => (
-              <Swatch key={`s-${value}`} value={value} active={color === value} onPick={pick} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {recent.length > 1 && (
-        <div>
-          <p className="mb-1.5 font-display text-[11px] font-extrabold tracking-wide text-ink-soft uppercase">
-            Recent
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {recent.map((value) => (
-              <Swatch key={`r-${value}`} value={value} active={color === value} onPick={pick} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {PALETTE_ROWS.map((row) => (
-        <div key={row.label}>
-          <p className="mb-1.5 font-display text-[11px] font-extrabold tracking-wide text-ink-soft uppercase">
-            {row.label}
-          </p>
-          <div className="grid grid-cols-6 gap-1.5 sm:grid-cols-6">
-            {row.colors.map((value) => (
-              <Swatch key={value} value={value} active={color === value} onPick={pick} />
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/**
- * The vertical colour rail that sits against the left edge of the canvas on
- * wide screens.
- *
- * Every colour is on screen at once, three to a row, with no tabs or groups in
- * the way: on a drawing surface the palette should be a thing you reach for,
- * not a menu you navigate. The current colour sits at the top where it doubles
- * as the"what am I painting with" indicator.
- */
-export function PaletteColumn({
-  color,
-  onPick,
-  suggested = [],
-  eyedropper,
-  onToggleEyedropper,
-  className,
-}: {
-  color: string;
-  onPick: (color: string) => void;
-  suggested?: string[];
-  eyedropper: boolean;
-  onToggleEyedropper: () => void;
-  className?: string;
-}) {
-  const [custom, setCustom] = useState(color);
-  const colors = [...new Set([...suggested, ...PALETTE_ROWS.flatMap((row) => row.colors)])];
-
-  return (
-    <div
-      className={cn(
-        'glass flex flex-col items-center gap-2 rounded-2xl border-sky/45 p-2',
-        className,
-      )}
-    >
-      <span
-        aria-hidden
-        title={color}
-        className="h-10 w-full shrink-0 rounded-xl border border-ink/10"
-        style={{ background: color }}
-      />
-
-      <div className="flex w-full gap-1">
-        <label
-          className="grid h-8 flex-1 cursor-pointer place-items-center rounded-lg border border-ink/10 bg-white text-grape-700 transition hover:bg-cream-deep"
-          title="Pick any colour"
-        >
-          <Plus className="size-4" aria-hidden />
-          <span className="sr-only">Choose a custom colour</span>
-          <input
-            type="color"
-            value={custom}
-            onChange={(e) => {
-              setCustom(e.target.value);
-              onPick(e.target.value.toUpperCase());
-            }}
-            className="sr-only"
-          />
-        </label>
-
-        <button
-          type="button"
-          onClick={onToggleEyedropper}
-          aria-pressed={eyedropper}
-          title="Copy a colour from the picture"
-          className={cn(
-            'grid h-8 flex-1 place-items-center rounded-lg border transition',
-            eyedropper
-              ? 'border-ink/10 bg-coral text-white'
-              : 'border-ink/10 bg-white text-grape-700 hover:bg-cream-deep',
-          )}
-        >
-          <Pipette className="size-4" aria-hidden />
-          <span className="sr-only">Eyedropper</span>
-        </button>
-      </div>
-
-      <div className="no-scrollbar grid w-full grid-cols-3 gap-1 overflow-y-auto">
-        {colors.map((value) => (
-          <button
-            key={value}
-            type="button"
-            aria-label={`Colour ${value}`}
-            aria-pressed={color === value}
-            title={value}
-            onClick={() => onPick(value)}
-            className={cn(
-              'relative aspect-square w-full rounded-md transition-transform hover:scale-110',
-              color === value && 'ring-2 ring-white shadow-[0_0_0_2px_rgb(28_22_48_/_0.5)]',
-              isLight(value) && 'border border-black/10',
-            )}
-            style={{ background: value }}
+        <div className="order-2 ml-auto flex shrink-0 items-center gap-1.5 sm:order-3 sm:ml-0">
+          <label
+            className="grid size-10 cursor-pointer place-items-center rounded-full border border-edge bg-white text-ink-soft transition hover:text-coral"
+            title="Pick any colour"
           >
-            {color === value && (
-              <span
-                aria-hidden
-                className={cn(
-                  'absolute inset-0 grid place-items-center',
-                  isLight(value) ? 'text-ink' : 'text-white',
-                )}
-              >
-                <Check className="size-3" strokeWidth={4} />
-              </span>
+            <Plus className="size-4.5" aria-hidden />
+            <span className="sr-only">Choose a custom colour</span>
+            <input
+              type="color"
+              value={custom}
+              onChange={(e) => {
+                setCustom(e.target.value);
+                pick(e.target.value.toUpperCase());
+              }}
+              className="sr-only"
+            />
+          </label>
+
+          <button
+            type="button"
+            onClick={onToggleEyedropper}
+            aria-pressed={eyedropper}
+            title="Copy a colour from the picture"
+            className={cn(
+              'grid size-10 place-items-center rounded-full border transition',
+              eyedropper
+                ? 'border-transparent bg-coral text-white'
+                : 'border-edge bg-white text-ink-soft hover:text-coral',
             )}
+          >
+            <Pipette className="size-4.5" aria-hidden />
+            <span className="sr-only">Eyedropper</span>
           </button>
-        ))}
+
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            className="inline-flex h-10 items-center gap-1.5 rounded-full border border-edge bg-white px-3 text-xs font-semibold text-ink-soft transition hover:text-coral"
+          >
+            <span className="hidden sm:inline">All colours</span>
+            <span className="sm:hidden">More</span>
+            <ChevronDown
+              className={cn('size-4 transition-transform', open && 'rotate-180')}
+              aria-hidden
+            />
+          </button>
+        </div>
       </div>
-    </div>
-  );
-}
 
-/** Compact horizontal strip for the mobile dock. */
-export function PaletteStrip({
-  color,
-  onPick,
-  suggested = [],
-}: {
-  color: string;
-  onPick: (color: string) => void;
-  suggested?: string[];
-}) {
-  const colors = [...new Set([...suggested, ...PALETTE_ROWS[0].colors, ...PALETTE_ROWS[1].colors])];
+      {open && (
+        <div className="animate-pop mt-4 space-y-4 border-t border-edge pt-4">
+          {recent.length > 1 && (
+            <div>
+              <p className="mb-2 text-[0.7rem] font-semibold tracking-[0.12em] text-ink-soft uppercase">
+                Recent
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {recent.map((value) => (
+                  <Swatch
+                    key={`r-${value}`}
+                    value={value}
+                    active={color === value}
+                    onPick={pick}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
-  return (
-    <div className="no-scrollbar flex items-center gap-2 overflow-x-auto px-1 py-1">
-      <label
-        className="tap-big grid shrink-0 cursor-pointer place-items-center rounded-2xl border border-ink/10 bg-white text-grape-700"
-        title="Any colour"
-      >
-        <Plus className="size-5" aria-hidden />
-        <input
-          type="color"
-          value={color}
-          onChange={(e) => onPick(e.target.value.toUpperCase())}
-          className="sr-only"
-        />
-      </label>
-
-      {colors.map((value) => (
-        <Swatch key={value} value={value} active={color === value} onPick={onPick} />
-      ))}
+          {PALETTE_ROWS.map((row) => (
+            <div key={row.label}>
+              <p className="mb-2 text-[0.7rem] font-semibold tracking-[0.12em] text-ink-soft uppercase">
+                {row.label}
+              </p>
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(2.25rem,1fr))] gap-2">
+                {row.colors.map((value) => (
+                  <Swatch key={value} value={value} active={color === value} onPick={pick} fill />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

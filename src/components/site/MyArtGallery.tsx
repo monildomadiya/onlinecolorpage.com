@@ -54,7 +54,7 @@ export function MyArtGallery() {
   if (entries === null) {
     return (
       <div className="grid place-items-center py-16">
-        <Loader2 className="size-8 animate-spin text-grape-500" aria-hidden />
+        <Loader2 className="size-8 animate-spin text-coral" aria-hidden />
       </div>
     );
   }
@@ -68,7 +68,7 @@ export function MyArtGallery() {
         <section className="card-kid mb-8 p-5" aria-label="Badges">
           <div className="flex flex-wrap items-center gap-4">
             <div>
-              <p className="flex items-center gap-1.5 font-display text-2xl font-extrabold text-grape-700">
+              <p className="flex items-center gap-1.5 font-display text-2xl font-extrabold text-ink">
                 <Star className="size-6 fill-sunny text-sunny" aria-hidden />
                 {rewards.stars} stars
               </p>
@@ -88,7 +88,7 @@ export function MyArtGallery() {
                       'flex items-center gap-2 rounded-2xl px-3 py-2 text-sm font-extrabold',
                       has
                         ? 'border border-sunny/45 bg-sunny/20 text-ink'
-                        : 'border border-ink/10 bg-white text-ink-soft/40 grayscale',
+                        : 'border border-edge bg-white text-ink-soft/40 grayscale',
                     )}
                   >
                     <badge.icon className="size-4" aria-hidden />
@@ -112,7 +112,7 @@ export function MyArtGallery() {
         <div className="card-kid mx-auto max-w-lg px-6 py-12 text-center">
           <span
             aria-hidden
-            className="mx-auto grid size-16 place-items-center rounded-xl bg-grape-50 text-grape-400"
+            className="mx-auto grid size-16 place-items-center rounded-xl bg-cream text-coral"
           >
             <Images className="size-8" />
           </span>

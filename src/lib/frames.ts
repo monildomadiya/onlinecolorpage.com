@@ -11,14 +11,14 @@
  * same side of the wheel, at any column count from two to five.
  */
 export const FRAME_COLORS = [
-  '#38bdf8', // sky
-  '#ff6b81', // coral
-  '#34d399', // mint
-  '#ff8a3d', // tangerine
-  '#8b4ff5', // grape
-  '#ffc83d', // sunny
-  '#f472b6', // bubblegum
-  '#22c3a6', // teal
+  '#59beeb', // sky
+  '#e04d6e', // coral
+  '#7cc9a5', // mint
+  '#ffa36a', // tangerine
+  '#a98bea', // lilac
+  '#ffc94d', // sunny
+  '#ff7fa3', // bubblegum
+  '#a8d65e', // leaf
 ] as const;
 
 /** The frame colour for the card at `index` in a grid. */

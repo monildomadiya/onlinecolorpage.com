@@ -7,9 +7,16 @@ import { publicEnv } from '@/lib/env';
 
 // Baloo 2 is the display face: rounded, very heavy at 800, and friendly
 // enough for a kids' site without tipping into comic lettering.
+//
+// Loaded as the variable font it is, rather than as a list of static weights.
+// Asking Google for several instances of a variable family makes it answer
+// with its /l/font?kit=... endpoint, and those URLs carry no file extension,
+// which next/font cannot parse - the build dies on "Cannot read properties of
+// null (reading '1')". The variable file comes back as a plain .woff2, covers
+// the whole 400-800 range, and is one request instead of three.
 const baloo = Baloo_2({
   subsets: ['latin'],
-  weight: ['600', '700', '800'],
+  weight: 'variable',
   variable: '--font-baloo',
   display: 'swap',
 });

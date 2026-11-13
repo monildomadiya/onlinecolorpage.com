@@ -17,7 +17,7 @@ import {
 import { bulkPagesAction, type BulkAction } from '@/app/admin/actions/pages';
 import { AdminButton, Alert, Badge, EmptyRow } from './ui';
 import { cn, formatDate, formatNumber } from '@/lib/utils';
-import type { ColoringPageWithCategory } from '@/types/db';
+import type { ColoringPageCard } from '@/types/db';
 
 const DIFFICULTY_TONE = { easy: 'green', medium: 'amber', hard: 'rose' } as const;
 
@@ -26,7 +26,7 @@ export function PagesTable({
   thumbFor,
   canDelete,
 }: {
-  pages: ColoringPageWithCategory[];
+  pages: ColoringPageCard[];
   /** Resolved on the server so this component never touches R2 config. */
   thumbFor: Record<string, string>;
   canDelete: boolean;

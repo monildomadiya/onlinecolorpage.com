@@ -73,6 +73,21 @@ export async function processCover(input: Buffer, width = 800): Promise<Buffer> 
 }
 
 /**
+ * Re-encodes anything as PNG, flattened onto white.
+ *
+ * pdf-lib embeds PNG and JPEG only, and our covers are stored as WebP - this
+ * is the one step between a book's cover image and its title page.
+ */
+export async function toPngBuffer(input: Buffer, width = 1400): Promise<Buffer> {
+  return sharp(input, { density: 220, failOn: 'none' })
+    .rotate()
+    .resize({ width, height: width, fit: 'inside', withoutEnlargement: true })
+    .flatten({ background: '#ffffff' })
+    .png({ compressionLevel: 9 })
+    .toBuffer();
+}
+
+/**
  * Picks a handful of dominant colours from a reference (already-coloured)
  * image, which the coloring game offers as the "suggested palette".
  */

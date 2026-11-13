@@ -1,6 +1,22 @@
 import { Breadcrumbs } from '@/components/ui/Section';
 import { cn } from '@/lib/utils';
 
+/**
+ * The site's long-form typography, as a class list rather than a component, so
+ * the hand-written pages below and the admin's rich text (<RichText />) read
+ * as the same voice instead of drifting apart.
+ */
+export const PROSE_TYPOGRAPHY = [
+  'text-[0.95rem] leading-[1.75] text-ink-soft sm:text-base',
+  '[&_h2]:mt-7 [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-extrabold [&_h2]:text-ink',
+  '[&_h2:first-child]:mt-0',
+  '[&_h3]:mt-5 [&_h3]:font-display [&_h3]:text-base [&_h3]:font-extrabold [&_h3]:text-ink',
+  '[&_ul]:list-disc [&_ul]:space-y-1.5 [&_ul]:pl-6',
+  '[&_ol]:list-decimal [&_ol]:space-y-1.5 [&_ol]:pl-6',
+  '[&_a]:font-semibold [&_a]:text-coral [&_a]:underline [&_a]:underline-offset-2',
+  '[&_strong]:font-semibold [&_strong]:text-ink',
+].join(' ');
+
 /** Shared shell for the static text pages (about, privacy, terms, contact). */
 export function Prose({
   title,
@@ -29,19 +45,7 @@ export function Prose({
         )}
       </header>
 
-      <div
-        className={cn(
-          'glass space-y-5 p-6 text-[0.95rem] leading-[1.75] text-ink-soft sm:p-8 sm:text-base',
-          '[&_h2]:mt-7 [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-extrabold [&_h2]:text-ink',
-          '[&_h2:first-child]:mt-0',
-          '[&_h3]:mt-5 [&_h3]:font-display [&_h3]:text-base [&_h3]:font-extrabold [&_h3]:text-ink',
-          '[&_ul]:list-disc [&_ul]:space-y-1.5 [&_ul]:pl-6',
-          '[&_ol]:list-decimal [&_ol]:space-y-1.5 [&_ol]:pl-6',
-          '[&_a]:font-semibold [&_a]:text-coral [&_a]:underline [&_a]:underline-offset-2',
-          '[&_strong]:font-semibold [&_strong]:text-ink',
-          className,
-        )}
-      >
+      <div className={cn('glass space-y-5 p-6 sm:p-8', PROSE_TYPOGRAPHY, className)}>
         {children}
       </div>
     </div>

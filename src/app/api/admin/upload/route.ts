@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { assertStaff, AuthError } from '@/lib/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { buildKey, putObject } from '@/lib/r2/client';
+import { buildKey, publicUrl, putObject } from '@/lib/r2/client';
 import { ACCEPTED_IMAGE_TYPES, MAX_UPLOAD_BYTES, processArtwork, processCover, suggestPalette } from '@/lib/images';
 import { buildColoringPdf } from '@/lib/pdf';
 import { getSettings } from '@/lib/settings';
@@ -13,7 +13,7 @@ import type { Difficulty } from '@/types/db';
 export const runtime = 'nodejs';
 export const maxDuration = 120;
 
-type Mode = 'page' | 'reference' | 'cover' | 'pdf';
+type Mode = 'page' | 'reference' | 'cover' | 'pdf' | 'bookCover' | 'inline';
 
 /** Appends -2, -3 … until the slug is free. */
 async function uniqueSlug(base: string): Promise<string> {
@@ -52,6 +52,9 @@ function bool(form: FormData, name: string, fallback = false): boolean {
  *   mode=reference  pre-coloured guide image for an existing page; also derives
  *                   a suggested palette from it
  *   mode=cover      category cover image
+ *   mode=bookCover  cover image for a coloring book
+ *   mode=inline     an image dropped into the rich text editor; stored and
+ *                   handed straight back as a URL
  *   mode=pdf        replace a page's printable PDF with a hand-made one
  */
 export async function POST(request: NextRequest) {
@@ -157,6 +160,61 @@ export async function POST(request: NextRequest) {
       revalidatePath('/categories');
       revalidatePath(`/category/${category.slug}`);
       return NextResponse.json({ ok: true, key });
+    }
+
+    if (mode === 'bookCover') {
+      const bookId = field(form, 'bookId');
+      if (!bookId) return NextResponse.json({ error: 'bookId is required.' }, { status: 400 });
+
+      const { data: book } = await supabase
+        .from('books')
+        .select('id, slug')
+        .eq('id', bookId)
+        .maybeSingle();
+      if (!book) return NextResponse.json({ error: 'Book not found.' }, { status: 404 });
+
+      const webp = await processCover(input, 1200);
+      const key = buildKey('books', book.slug, 'webp');
+      const stored = await putObject({ key, body: webp, contentType: 'image/webp' });
+
+      await Promise.all([
+        // The cover shows on the book's PDF title page, so the cached PDF is
+        // no longer what this book looks like.
+        supabase
+          .from('books')
+          .update({ cover_key: key, pdf_key: null, pdf_built_at: null })
+          .eq('id', book.id),
+        supabase.from('media').insert({
+          key,
+          kind: 'image',
+          mime_type: 'image/webp',
+          size_bytes: stored.size,
+          original_name: file.name,
+          uploaded_by: session.userId,
+        }),
+      ]);
+
+      revalidatePath('/books');
+      revalidatePath(`/book/${book.slug}`);
+      return NextResponse.json({ ok: true, key, url: publicUrl(key) });
+    }
+
+    if (mode === 'inline') {
+      const webp = await processCover(input, 1400);
+      const key = buildKey('content', file.name.replace(/\.[a-z0-9]+$/i, ''), 'webp');
+      const stored = await putObject({ key, body: webp, contentType: 'image/webp' });
+
+      await supabase.from('media').insert({
+        key,
+        kind: 'image',
+        mime_type: 'image/webp',
+        size_bytes: stored.size,
+        original_name: file.name,
+        uploaded_by: session.userId,
+      });
+
+      // The editor needs a URL it can put in a <img src>, not a storage key.
+      return NextResponse.json({ ok: true, key, url: publicUrl(key) });
     }
 
     if (mode === 'reference') {

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
   BarChart3,
+  BookOpen,
   ExternalLink,
   FolderTree,
   Image as ImageIcon,
@@ -34,6 +35,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true, min: 'editor' },
   { href: '/admin/pages', label: 'Coloring pages', icon: Palette, exact: false, min: 'editor' },
+  { href: '/admin/books', label: 'Coloring books', icon: BookOpen, exact: false, min: 'editor' },
   { href: '/admin/upload', label: 'Bulk upload', icon: Upload, exact: false, min: 'editor' },
   { href: '/admin/categories', label: 'Categories', icon: FolderTree, exact: false, min: 'editor' },
   { href: '/admin/media', label: 'Media library', icon: ImageIcon, exact: false, min: 'editor' },

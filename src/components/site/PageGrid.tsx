@@ -1,7 +1,7 @@
 import { PageCard, PageCardSkeleton } from './PageCard';
 import { AdSlot } from './AdSlot';
 import { cn } from '@/lib/utils';
-import type { ColoringPageWithCategory } from '@/types/db';
+import type { ColoringPageCard } from '@/types/db';
 
 const GRID = 'grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
 
@@ -12,7 +12,7 @@ export function PageGrid({
   adAfter = 0,
   priorityCount = 4,
 }: {
-  pages: ColoringPageWithCategory[];
+  pages: ColoringPageCard[];
   className?: string;
   adAfter?: number;
   priorityCount?: number;

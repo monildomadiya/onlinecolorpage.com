@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
+  BookOpen,
   Brush,
   Download,
   Images,
@@ -12,7 +13,7 @@ import {
   Undo2,
   ZoomIn,
 } from 'lucide-react';
-import { getPageBySlug, getRelatedPages } from '@/lib/queries';
+import { getBooksForPage, getPageBySlug, getRelatedPages } from '@/lib/queries';
 import { getSettings } from '@/lib/settings';
 import { publicUrl } from '@/lib/r2/public';
 import { downloadUrl, fileUrl } from '@/lib/r2/urls';
@@ -20,6 +21,7 @@ import { buildPageMetadata } from '@/lib/seo/metadata';
 import { breadcrumbSchema, coloringPageSchema } from '@/lib/seo/jsonld';
 import { ColoringStudio } from '@/components/coloring/ColoringStudio';
 import { JsonLd } from '@/components/site/JsonLd';
+import { RichText } from '@/components/site/RichText';
 import { ViewTracker } from '@/components/site/ViewTracker';
 import { PageGrid } from '@/components/site/PageGrid';
 import { AdSlot } from '@/components/site/AdSlot';
@@ -60,7 +62,10 @@ export default async function ColorPage({ params }: Props) {
 
   if (!page) notFound();
 
-  const related = await getRelatedPages(page, 10);
+  const [related, books] = await Promise.all([
+    getRelatedPages(page, 10),
+    getBooksForPage(page.id, 3),
+  ]);
   const { site, features } = settings;
 
   const trail = [
@@ -171,6 +176,34 @@ export default async function ColorPage({ params }: Props) {
           </section>
         )}
 
+        {/* ------------------------ books ------------------------ */}
+        {books.length > 0 && (
+          <section
+            className="panel panel-wash mt-6 p-5 sm:p-6"
+            style={{ ['--wash' as string]: 'var(--color-butter)' }}
+            aria-labelledby="in-books"
+          >
+            <h2 id="in-books" className="font-display text-lg text-ink">
+              Part of a coloring book
+            </h2>
+            <p className="mt-1 text-sm text-ink-soft">
+              Get this page and the rest of its set as one printable PDF.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {books.map((book) => (
+                <Link
+                  key={book.id}
+                  href={`/book/${book.slug}`}
+                  className="btn-kid btn-ghost px-5 py-2.5 text-sm"
+                >
+                  <BookOpen className="size-4.5" aria-hidden />
+                  {book.title}
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
         <AdSlot slot="below_canvas" />
 
         {/* ------------------------ about this page ------------------------ */}
@@ -181,6 +214,9 @@ export default async function ColorPage({ params }: Props) {
               {page.description ||
                 `Colour the ${page.title.toLowerCase()} coloring page right here in your browser, or print it out and use real crayons. Tap the bucket tool and any colour to fill a shape instantly, or switch to a brush for free drawing. When you are happy with it, save a PNG or print it for the fridge.`}
             </p>
+
+            {/* The admin's long-form copy, if this page has any. */}
+            <RichText html={page.body_html} className="mt-5" />
 
             {page.tags.length > 0 && (
               <div className="mt-5">

@@ -1,11 +1,11 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Flame, Grid3x3, Home, LayoutGrid, Menu, Search, Sparkles, X } from 'lucide-react';
+import { BookOpen, Flame, Grid3x3, Home, LayoutGrid, Menu, Search, Sparkles, X } from 'lucide-react';
 import { SearchBox } from './SearchBox';
-import { CrayonMark } from '@/components/ui/Decor';
 import { cn } from '@/lib/utils';
 
 export interface NavCategory {
@@ -18,42 +18,9 @@ const LINKS = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/coloring-pages', label: 'Coloring pages', icon: LayoutGrid },
   { href: '/categories', label: 'Categories', icon: Grid3x3 },
+  { href: '/books', label: 'Coloring books', icon: BookOpen },
   { href: '/popular', label: 'Most loved', icon: Flame },
 ] as const;
-
-/** The six crayon colours the wordmark cycles through, letter by letter. */
-const LETTER_TONES = [
-  'var(--color-coral-soft)',
-  'var(--color-butter)',
-  'var(--color-mint)',
-  'var(--color-sky)',
-  'var(--color-lilac)',
-  'var(--color-leaf)',
-];
-
-/**
- * The wordmark, spelled out one letter at a time so each one can take the
- * next colour in the crayon box. Screen readers get the plain string from the
- * link's aria-label, so the split letters are hidden from them.
- */
-function Wordmark({ text }: { text: string }) {
-  let letterIndex = 0;
-
-  return (
-    <span aria-hidden className="font-display text-[1.35rem] leading-none sm:text-[1.6rem]">
-      {text.split('').map((char, i) => {
-        if (char === ' ') return <span key={i}>&nbsp;</span>;
-        const tone = LETTER_TONES[letterIndex % LETTER_TONES.length];
-        letterIndex += 1;
-        return (
-          <span key={i} style={{ color: tone }}>
-            {char}
-          </span>
-        );
-      })}
-    </span>
-  );
-}
 
 export function HeaderNav({
   siteName,
@@ -89,15 +56,18 @@ export function HeaderNav({
           white capsule, the way a sticker sits on the paper. */}
       <header className="sticky top-0 z-50 bg-cream/85 backdrop-blur-md">
         <div className="mx-auto flex h-[var(--nav-h)] max-w-7xl items-center gap-4 px-4 sm:px-6">
-          <Link
-            href="/"
-            className="flex shrink-0 items-center gap-2"
-            aria-label={`${siteName} home`}
-          >
-            <span className="grid size-10 place-items-center rounded-2xl bg-coral text-white shadow-[var(--shadow-pill)]">
-              <CrayonMark className="size-5.5" />
-            </span>
-            <Wordmark text="Online Color Page" />
+          <Link href="/" className="flex shrink-0 items-center" aria-label={`${siteName} home`}>
+            {/* The lockup is the whole brand - mark and wordmark in one file -
+                so the bar carries the logo itself rather than a redrawn copy. */}
+            <Image
+              src="/logo.png"
+              alt={siteName}
+              width={692}
+              height={360}
+              sizes="(min-width: 640px) 108px, 92px"
+              priority
+              className="h-12 w-auto sm:h-14"
+            />
           </Link>
 
           <nav

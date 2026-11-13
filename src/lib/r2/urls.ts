@@ -55,3 +55,8 @@ export function cdnUrl(key: string | null | undefined, publicBase?: string): str
 export function downloadUrl(slug: string, kind: 'png' | 'pdf'): string {
   return `/api/download/${encodeURIComponent(slug)}/${kind}`;
 }
+
+/** The multi-page PDF for a coloring book, built on first request. */
+export function bookPdfUrl(slug: string): string {
+  return `/api/book/${encodeURIComponent(slug)}/pdf`;
+}

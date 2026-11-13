@@ -19,6 +19,7 @@ import {
   updatePageAction,
   type ActionResult,
 } from '@/app/admin/actions/pages';
+import { RichTextEditor } from './RichTextEditor';
 import { AdminButton, Alert, Badge, Card, Field, Input, Select, Textarea, Toggle } from './ui';
 import { formatBytes, formatDateTime, formatNumber, slugify } from '@/lib/utils';
 import type { Category, ColoringPage, Difficulty } from '@/types/db';
@@ -142,7 +143,11 @@ export function EditPageForm({
                 />
               </Field>
 
-              <Field label="Description" htmlFor="description">
+              <Field
+                label="Description"
+                htmlFor="description"
+                hint="One or two lines. This is what the meta description falls back to."
+              >
                 <Textarea
                   id="description"
                   name="description"
@@ -150,6 +155,13 @@ export function EditPageForm({
                   rows={4}
                   maxLength={2000}
                 />
+              </Field>
+
+              <Field
+                label="Full write-up"
+                hint="Optional long copy under the canvas - headings, lists, links and images."
+              >
+                <RichTextEditor name="bodyHtml" defaultValue={page.body_html} />
               </Field>
             </div>
           </Card>

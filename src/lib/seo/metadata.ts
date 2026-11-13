@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { publicEnv } from '@/lib/env';
 import { getSettings } from '@/lib/settings';
 import { publicUrl } from '@/lib/r2/public';
-import type { Category, ColoringPageWithCategory } from '@/types/db';
+import { excerptFromHtml } from '@/lib/html';
+import type { Book, Category, ColoringPageWithCategory } from '@/types/db';
 
 export function siteUrl(path = '/'): string {
   const base = publicEnv.siteUrl.replace(/\/+$/, '');
@@ -66,9 +67,12 @@ export async function buildRootMetadata(): Promise<Metadata> {
     },
     icons: {
       icon: [
-        { url: '/favicon.svg', type: 'image/svg+xml' },
+        { url: '/favicon.ico', sizes: '16x16 32x32 48x48', type: 'image/x-icon' },
+        { url: '/favicon-16.png', sizes: '16x16', type: 'image/png' },
+        { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
         { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
       ],
+      shortcut: '/favicon.ico',
       apple: '/apple-icon.png',
     },
     category: 'kids',
@@ -108,6 +112,47 @@ export async function buildPageMetadata(page: ColoringPageWithCategory): Promise
       title,
       description,
       images: [image],
+    },
+  };
+}
+
+/** Metadata for a coloring book. */
+export async function buildBookMetadata(book: Book, pageCount: number): Promise<Metadata> {
+  const { site } = await getSettings();
+  const url = siteUrl(`/book/${book.slug}`);
+  const image = book.cover_key ? publicUrl(book.cover_key) : null;
+
+  const title =
+    book.seo_title || `${book.title} - Free Printable Coloring Book (${pageCount} Pages)`;
+  const description =
+    book.seo_description ||
+    truncate(
+      book.description ||
+        // The long body is the richest thing we have when nothing shorter was
+        // written, so it stands in rather than leaving the snippet to Google.
+        excerptFromHtml(book.body_html, 320) ||
+        `Download ${book.title} as one printable PDF - ${pageCount} free coloring page${
+          pageCount === 1 ? '' : 's'
+        } for kids, ready for A4 paper.`,
+    );
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: 'book',
+      title,
+      description,
+      url,
+      siteName: site.name,
+      ...(image ? { images: [{ url: image, alt: `${book.title} coloring book` }] } : {}),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      ...(image ? { images: [image] } : {}),
     },
   };
 }

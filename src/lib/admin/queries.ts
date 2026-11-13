@@ -3,9 +3,10 @@ import { isSupabaseAdminConfigured } from '@/lib/env';
 import type {
   AdSlot,
   AdminStats,
+  Book,
   Category,
   ColoringPage,
-  ColoringPageWithCategory,
+  ColoringPageCard,
   DailyPoint,
   MediaItem,
   Profile,
@@ -28,6 +29,8 @@ export const EMPTY_STATS: AdminStats = {
   pages_published: 0,
   pages_draft: 0,
   categories_total: 0,
+  books_total: 0,
+  books_published: 0,
   media_total: 0,
   storage_bytes: 0,
   views_total: 0,
@@ -151,7 +154,7 @@ export async function listPages(query: AdminPageQuery = {}) {
 
   const total = count ?? 0;
   return {
-    items: (data ?? []) as unknown as ColoringPageWithCategory[],
+    items: (data ?? []) as unknown as ColoringPageCard[],
     total,
     page,
     perPage,
@@ -192,6 +195,80 @@ export async function listCategories(): Promise<(Category & { page_count: number
     ...c,
     page_count: counts.get(c.id) ?? 0,
   }));
+}
+
+/* ------------------------------------------------------------------ */
+/*  coloring books                                                     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * One row in the book editor's page picker. Lives here rather than beside the
+ * action that returns it: a `'use server'` module should only export the
+ * actions themselves.
+ */
+export interface PickerPage {
+  id: string;
+  title: string;
+  slug: string;
+  thumbUrl: string;
+  isPublished: boolean;
+  categoryName: string | null;
+}
+
+/** Every book, draft or live, with how many pages each one holds. */
+export async function listBooks(): Promise<(Book & { page_count: number })[]> {
+  if (!isSupabaseAdminConfigured) return [];
+
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('books')
+    .select('*, book_pages ( page_id )')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.warn('[admin] listBooks failed', error.message);
+    return [];
+  }
+
+  return ((data ?? []) as unknown as (Book & { book_pages: { page_id: string }[] })[]).map(
+    ({ book_pages, ...book }) => ({ ...book, page_count: book_pages?.length ?? 0 }),
+  );
+}
+
+export async function getBookById(id: string): Promise<Book | null> {
+  if (!isSupabaseAdminConfigured) return null;
+
+  const supabase = createAdminClient();
+  const { data } = await supabase.from('books').select('*').eq('id', id).maybeSingle();
+  return (data as Book) ?? null;
+}
+
+/**
+ * A book's contents in order, drafts included - the editor must show a page
+ * that is still unpublished, or an admin cannot tell why it is missing from
+ * the public listing.
+ */
+export async function getBookContents(bookId: string): Promise<ColoringPageCard[]> {
+  if (!isSupabaseAdminConfigured) return [];
+
+  const supabase = createAdminClient();
+  const { data: links } = await supabase
+    .from('book_pages')
+    .select('page_id, sort_order')
+    .eq('book_id', bookId)
+    .order('sort_order', { ascending: true });
+
+  const order = new Map((links ?? []).map((row, i) => [row.page_id as string, i]));
+  if (order.size === 0) return [];
+
+  const { data } = await supabase
+    .from('coloring_pages')
+    .select(PAGE_SELECT)
+    .in('id', Array.from(order.keys()));
+
+  return ((data ?? []) as unknown as ColoringPageCard[]).sort(
+    (a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0),
+  );
 }
 
 /* ------------------------------------------------------------------ */

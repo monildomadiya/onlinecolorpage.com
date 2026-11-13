@@ -470,15 +470,6 @@
     );
   }
 
-  /* Faint ruled lines, for the long-copy panel. */
-  .ruled {
-    background-image: repeating-linear-gradient(
-      to bottom,
-      transparent 0 2.1rem,
-      color-mix(in srgb, var(--color-edge) 70%, #fff) 2.1rem 2.15rem
-    );
-  }
-
   .skeleton {
     background: linear-gradient(
       90deg,

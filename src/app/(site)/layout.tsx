@@ -31,7 +31,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <JsonLd
         data={[
           websiteSchema(site.name, site.description),
-          organizationSchema(site.name, siteUrl('/icon-192.png'), [
+          organizationSchema(site.name, siteUrl('/logo.png'), [
             seo.facebook,
             seo.instagram,
             seo.twitter,

@@ -7,6 +7,7 @@ import { requireStaff } from '@/lib/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { buildKey, deleteObjects, getObjectBuffer, putObject } from '@/lib/r2/client';
 import { buildColoringPdf } from '@/lib/pdf';
+import { sanitizeRichText } from '@/lib/html';
 import { getSettings } from '@/lib/settings';
 import { publicEnv } from '@/lib/env';
 import { parseTags, slugify } from '@/lib/utils';
@@ -21,6 +22,7 @@ const PageInput = z.object({
   title: z.string().min(2, 'Title needs at least 2 characters.').max(160),
   slug: z.string().min(2).max(120),
   description: z.string().max(2000).optional(),
+  bodyHtml: z.string().max(120_000).optional(),
   categoryId: z.string().uuid().nullable(),
   difficulty: z.enum(['easy', 'medium', 'hard']),
   ageMin: z.coerce.number().int().min(1).max(18),
@@ -57,6 +59,7 @@ export async function updatePageAction(
     title: text(form, 'title'),
     slug: slugify(text(form, 'slug') || text(form, 'title')),
     description: text(form, 'description'),
+    bodyHtml: text(form, 'bodyHtml'),
     categoryId: text(form, 'categoryId') || null,
     difficulty: text(form, 'difficulty') || 'easy',
     ageMin: text(form, 'ageMin') || '3',
@@ -113,6 +116,7 @@ export async function updatePageAction(
       title: input.title,
       slug: input.slug,
       description: input.description || null,
+      body_html: sanitizeRichText(input.bodyHtml),
       category_id: input.categoryId,
       difficulty: input.difficulty,
       age_min: input.ageMin,

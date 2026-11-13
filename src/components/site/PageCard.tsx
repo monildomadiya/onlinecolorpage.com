@@ -4,7 +4,7 @@ import { Eye, ImageOff } from 'lucide-react';
 import { publicUrl } from '@/lib/r2/public';
 import { frameStyle } from '@/lib/frames';
 import { cn, formatNumber } from '@/lib/utils';
-import type { ColoringPageWithCategory, Difficulty } from '@/types/db';
+import type { ColoringPageCard, Difficulty } from '@/types/db';
 
 const DIFFICULTY_LABEL: Record<Difficulty, string> = {
   easy: 'Easy',
@@ -18,7 +18,7 @@ export function PageCard({
   priority = false,
   className,
 }: {
-  page: ColoringPageWithCategory;
+  page: ColoringPageCard;
   /** Position in the grid - decides which frame colour the card wears. */
   index?: number;
   priority?: boolean;

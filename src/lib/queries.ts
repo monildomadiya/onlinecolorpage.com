@@ -1,7 +1,14 @@
 import { cache } from 'react';
 import { createPublicClient } from '@/lib/supabase/public';
 import { isSupabaseConfigured } from '@/lib/env';
-import type { Category, ColoringPageWithCategory, Difficulty } from '@/types/db';
+import type {
+  Book,
+  BookWithPages,
+  Category,
+  ColoringPageCard,
+  ColoringPageWithCategory,
+  Difficulty,
+} from '@/types/db';
 
 const PAGE_SELECT = `
   id, slug, title, description, category_id,
@@ -13,6 +20,17 @@ const PAGE_SELECT = `
   seo_title, seo_description,
   published_at, created_at, updated_at,
   category:categories ( id, slug, name, emoji, color )
+`;
+
+/** The one place that wants the long-form body: the page's own route. */
+const PAGE_DETAIL_SELECT = `${PAGE_SELECT}, body_html`;
+
+const BOOK_SELECT = `
+  id, slug, title, subtitle, description, body_html,
+  cover_key, pdf_key, pdf_built_at, pdf_pages, include_cover_page,
+  is_published, is_featured, allow_download, download_count,
+  seo_title, seo_description,
+  published_at, created_at, updated_at
 `;
 
 export type SortOption = 'newest' | 'popular' | 'most_colored' | 'az';
@@ -101,10 +119,10 @@ export const getCategoryBySlug = cache(async (slug: string): Promise<Category | 
 /*  coloring pages                                                     */
 /* ------------------------------------------------------------------ */
 
-export async function getPages(query: PageQuery = {}): Promise<PagedResult<ColoringPageWithCategory>> {
+export async function getPages(query: PageQuery = {}): Promise<PagedResult<ColoringPageCard>> {
   const page = Math.max(1, query.page ?? 1);
   const perPage = Math.min(Math.max(query.perPage ?? 24, 1), 96);
-  const empty: PagedResult<ColoringPageWithCategory> = {
+  const empty: PagedResult<ColoringPageCard> = {
     items: [],
     total: 0,
     page,
@@ -159,7 +177,7 @@ export async function getPages(query: PageQuery = {}): Promise<PagedResult<Color
 
   const total = count ?? 0;
   return {
-    items: (data ?? []) as unknown as ColoringPageWithCategory[],
+    items: (data ?? []) as unknown as ColoringPageCard[],
     total,
     page,
     perPage,
@@ -174,7 +192,7 @@ export const getPageBySlug = cache(
     const supabase = createPublicClient();
     const { data } = await supabase
       .from('coloring_pages')
-      .select(PAGE_SELECT)
+      .select(PAGE_DETAIL_SELECT)
       .eq('slug', slug)
       .eq('is_published', true)
       .maybeSingle();
@@ -187,11 +205,11 @@ export const getPageBySlug = cache(
 export async function getRelatedPages(
   page: ColoringPageWithCategory,
   limit = 12,
-): Promise<ColoringPageWithCategory[]> {
+): Promise<ColoringPageCard[]> {
   if (!isSupabaseConfigured) return [];
 
   const supabase = createPublicClient();
-  const collected = new Map<string, ColoringPageWithCategory>();
+  const collected = new Map<string, ColoringPageCard>();
 
   if (page.category_id) {
     const { data } = await supabase
@@ -203,7 +221,7 @@ export async function getRelatedPages(
       .order('view_count', { ascending: false })
       .limit(limit);
 
-    for (const row of (data ?? []) as unknown as ColoringPageWithCategory[]) {
+    for (const row of (data ?? []) as unknown as ColoringPageCard[]) {
       collected.set(row.id, row);
     }
   }
@@ -217,7 +235,7 @@ export async function getRelatedPages(
       .neq('id', page.id)
       .limit(limit);
 
-    for (const row of (data ?? []) as unknown as ColoringPageWithCategory[]) {
+    for (const row of (data ?? []) as unknown as ColoringPageCard[]) {
       if (collected.size >= limit) break;
       collected.set(row.id, row);
     }
@@ -258,12 +276,126 @@ export const getPopularTags = cache(async (limit = 40): Promise<{ tag: string; c
     .slice(0, limit);
 });
 
-/** Slim rows for sitemap.xml. */
-export async function getSitemapEntries() {
-  if (!isSupabaseConfigured) return { pages: [], categories: [] };
+/* ------------------------------------------------------------------ */
+/*  coloring books                                                     */
+/* ------------------------------------------------------------------ */
+
+/** A published book plus what a card needs: its size and something to show. */
+export type BookCardData = Book & { page_count: number; cover_fallback_key: string | null };
+
+/**
+ * Published books, top picks first.
+ *
+ * The first page of each book comes along so a book with no uploaded cover
+ * still has a picture on its card.
+ */
+export const getBooks = cache(async (limit = 60): Promise<BookCardData[]> => {
+  if (!isSupabaseConfigured) return [];
+
+  type Row = Book & {
+    book_pages: {
+      sort_order: number;
+      page: { thumb_key: string | null; image_key: string } | null;
+    }[];
+  };
 
   const supabase = createPublicClient();
-  const [{ data: pages }, { data: categories }] = await Promise.all([
+  const { data } = await supabase
+    .from('books')
+    .select(
+      `${BOOK_SELECT}, book_pages ( sort_order, page:coloring_pages ( thumb_key, image_key ) )`,
+    )
+    .eq('is_published', true)
+    .order('is_featured', { ascending: false })
+    .order('published_at', { ascending: false, nullsFirst: false })
+    .limit(limit);
+
+  return ((data ?? []) as unknown as Row[]).map(({ book_pages, ...book }) => {
+    const first = [...(book_pages ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0]?.page;
+
+    return {
+      ...book,
+      page_count: book_pages?.length ?? 0,
+      cover_fallback_key: first ? (first.thumb_key ?? first.image_key) : null,
+    };
+  });
+});
+
+/**
+ * One published book with its pages already in reading order.
+ *
+ * Supabase cannot order an embedded table by a column of the join row, so the
+ * contents come back in two steps and are sorted here.
+ */
+export const getBookBySlug = cache(async (slug: string): Promise<BookWithPages | null> => {
+  if (!isSupabaseConfigured) return null;
+
+  const supabase = createPublicClient();
+  const { data: book } = await supabase
+    .from('books')
+    .select(BOOK_SELECT)
+    .eq('slug', slug)
+    .eq('is_published', true)
+    .maybeSingle();
+
+  if (!book) return null;
+
+  const { data: links } = await supabase
+    .from('book_pages')
+    .select('page_id, sort_order')
+    .eq('book_id', (book as unknown as Book).id)
+    .order('sort_order', { ascending: true });
+
+  const order = new Map((links ?? []).map((row, i) => [row.page_id as string, i]));
+  if (order.size === 0) return { ...(book as unknown as Book), pages: [] };
+
+  const { data: pages } = await supabase
+    .from('coloring_pages')
+    .select(PAGE_SELECT)
+    .in('id', Array.from(order.keys()))
+    .eq('is_published', true);
+
+  // A page that was unpublished after the book was built simply drops out.
+  const sorted = ((pages ?? []) as unknown as ColoringPageCard[]).sort(
+    (a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0),
+  );
+
+  return { ...(book as unknown as Book), pages: sorted };
+});
+
+/** Books that contain this page, so a coloring page can point back at them. */
+export async function getBooksForPage(pageId: string, limit = 4): Promise<Book[]> {
+  if (!isSupabaseConfigured) return [];
+
+  const supabase = createPublicClient();
+  const { data: links } = await supabase
+    .from('book_pages')
+    .select('book_id')
+    .eq('page_id', pageId)
+    .limit(limit);
+
+  const ids = (links ?? []).map((row) => row.book_id as string);
+  if (ids.length === 0) return [];
+
+  const { data } = await supabase
+    .from('books')
+    .select(BOOK_SELECT)
+    .in('id', ids)
+    .eq('is_published', true);
+
+  return (data ?? []) as unknown as Book[];
+}
+
+/* ------------------------------------------------------------------ */
+/*  sitemap                                                            */
+/* ------------------------------------------------------------------ */
+
+/** Slim rows for sitemap.xml. */
+export async function getSitemapEntries() {
+  if (!isSupabaseConfigured) return { pages: [], categories: [], books: [] };
+
+  const supabase = createPublicClient();
+  const [{ data: pages }, { data: categories }, { data: books }] = await Promise.all([
     supabase
       .from('coloring_pages')
       .select('slug, updated_at')
@@ -271,10 +403,12 @@ export async function getSitemapEntries() {
       .order('published_at', { ascending: false })
       .limit(45000),
     supabase.from('categories').select('slug, updated_at').eq('is_active', true),
+    supabase.from('books').select('slug, updated_at').eq('is_published', true).limit(2000),
   ]);
 
   return {
     pages: (pages ?? []) as { slug: string; updated_at: string }[],
     categories: (categories ?? []) as { slug: string; updated_at: string }[],
+    books: (books ?? []) as { slug: string; updated_at: string }[],
   };
 }

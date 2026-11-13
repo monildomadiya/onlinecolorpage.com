@@ -50,7 +50,7 @@ function safeName(name: string): string {
 
 /** `pages/2026/11/<slug>-<rand>.png` */
 export function buildKey(
-  folder: 'pages' | 'thumbs' | 'pdfs' | 'refs' | 'covers' | 'site',
+  folder: 'pages' | 'thumbs' | 'pdfs' | 'refs' | 'covers' | 'site' | 'books' | 'content',
   name: string,
   ext: string,
 ): string {

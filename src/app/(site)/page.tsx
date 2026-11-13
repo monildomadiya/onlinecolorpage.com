@@ -154,22 +154,23 @@ function Panel({
   children,
   wash,
   holes = false,
-  width = "wide",
   className = "",
   ...rest
 }: {
   children: React.ReactNode;
   wash?: string;
   holes?: boolean;
-  width?: "wide" | "narrow";
   className?: string;
 } & React.HTMLAttributes<HTMLElement>) {
   return (
+    // Every panel shares one measure. A narrower sheet in the middle of the
+    // stack reads as a mistake rather than as emphasis, because the peach
+    // margin beside it is the only thing that changes.
     <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8" {...rest}>
       <div
         className={`panel ${wash ? "panel-wash" : ""} ${
           holes ? "panel-holes" : ""
-        } mx-auto ${width === "narrow" ? "max-w-4xl" : ""} px-5 ${
+        } mx-auto px-5 ${
           holes ? "pt-12" : "pt-10"
         } pb-10 sm:px-10 sm:pb-14 ${holes ? "sm:pt-16" : "sm:pt-14"} ${className}`}
         style={wash ? { ["--wash" as string]: wash } : undefined}
@@ -428,7 +429,7 @@ export default async function HomePage() {
       </Panel>
 
       {/* ---------------------------- the mood ---------------------------- */}
-      <Panel wash="var(--color-blush)" width="narrow" className="text-center">
+      <Panel wash="var(--color-blush)" className="text-center">
         <h2 className="font-display text-xl text-ink sm:text-2xl">
           An afternoon that feels lighter{" "}
           <Heart className="inline size-5 fill-coral text-coral" aria-hidden />
@@ -526,7 +527,7 @@ export default async function HomePage() {
 
       {/* ======================== the long version ======================== */}
       <Panel aria-labelledby="overview">
-        <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
+        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-14">
           <div>
             <p className="eyebrow">In a nutshell</p>
             <h2
@@ -538,12 +539,12 @@ export default async function HomePage() {
                 offers
               </span>
             </h2>
-            <p className="mt-4 text-sm leading-relaxed text-ink-soft">
+            <p className="mt-4 max-w-md text-sm leading-relaxed text-ink-soft sm:text-base">
               A free online coloring book and a printable library in one place - no account, no
               download, nothing to install.
             </p>
 
-            <ul className="mt-6 space-y-2.5">
+            <ul className="mt-6 max-w-md space-y-2.5">
               {[
                 { icon: PaintBucket, tone: "var(--color-blush)", label: "Free coloring app" },
                 { icon: Printer, tone: "var(--color-butter)", label: "Printable PDF pages" },
@@ -566,33 +567,40 @@ export default async function HomePage() {
             </ul>
           </div>
 
-          <div className="ruled rounded-[1.5rem] border border-edge p-5 text-[0.95rem] leading-[2.1rem] text-ink-soft sm:p-7">
-            <p>
+          <div className="space-y-4 rounded-[1.5rem] border border-edge bg-cream/50 p-5 text-[0.95rem] leading-[1.8] text-ink/75 sm:space-y-5 sm:p-7 sm:text-base">
+            <p className="font-medium text-ink">
               Welcome to a coloring book the whole family can share. {site.name} is a free online
               coloring site where kids and grown-ups can relax and make something bright, right in
               the browser - no downloads, no sign-ups.
             </p>
-            <p className="mt-[2.1rem]">
+            <p>
               Every drawing can be coloured on screen with a tap-to-fill bucket, a brush, glitter
               and stickers, or printed as a clean black-and-white PDF for crayons and pencils at
               the kitchen table. Animals, cartoons, vehicles, princesses, dinosaurs, flowers,
               letters and numbers - the library keeps growing.
             </p>
-            <p className="mt-[2.1rem]">
+            <p>
               It all works on a phone, a tablet and a desktop. Pick a colour, tap a shape and watch
               the picture come to life. Work is saved on the device, so a half-finished page is
               still there tomorrow.
             </p>
-            <p className="mt-[2.1rem]">
+            <p>
               Whether you want a quiet creative break, a rainy-afternoon activity or a stack of
-              pages for the classroom, start colouring free today.
+              pages for the classroom,{" "}
+              <Link
+                href="/coloring-pages"
+                className="font-semibold text-coral underline decoration-coral/40 underline-offset-4 hover:decoration-coral"
+              >
+                start colouring free today
+              </Link>
+              .
             </p>
           </div>
         </div>
       </Panel>
 
       {/* ============================== faq ============================== */}
-      <Panel width="narrow" aria-labelledby="faq">
+      <Panel aria-labelledby="faq">
         <div className="text-center">
           <p className="eyebrow">Good to know</p>
           <h2

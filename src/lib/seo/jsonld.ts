@@ -1,6 +1,6 @@
 import { publicEnv } from '@/lib/env';
 import { siteUrl } from './metadata';
-import type { Category, ColoringPageWithCategory } from '@/types/db';
+import type { Book, Category, ColoringPageCard, ColoringPageWithCategory } from '@/types/db';
 
 type Json = Record<string, unknown>;
 
@@ -99,8 +99,8 @@ export function coloringPageSchema(page: ColoringPageWithCategory, imageUrl: str
 
 export function categorySchema(
   category: Category,
-  pages: ColoringPageWithCategory[],
-  imageFor: (page: ColoringPageWithCategory) => string,
+  pages: ColoringPageCard[],
+  imageFor: (page: ColoringPageCard) => string,
 ): Json {
   return {
     '@context': 'https://schema.org',
@@ -119,6 +119,72 @@ export function categorySchema(
         url: siteUrl(`/color/${page.slug}`),
         name: page.title,
         image: imageFor(page),
+      })),
+    },
+  };
+}
+
+/**
+ * A coloring book is a page listing other pages, so CollectionPage + ItemList
+ * is the honest shape - Google's Book markup is for the books index and wants
+ * an ISBN and an edition, neither of which a printable PDF has.
+ */
+export function bookSchema(
+  book: Book,
+  pages: ColoringPageCard[],
+  imageFor: (page: ColoringPageCard) => string,
+  coverUrl: string | null,
+): Json {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    '@id': siteUrl(`/book/${book.slug}#collection`),
+    name: book.title,
+    alternateName: book.subtitle ?? undefined,
+    description: book.description ?? undefined,
+    url: siteUrl(`/book/${book.slug}`),
+    datePublished: book.published_at ?? book.created_at,
+    dateModified: book.updated_at,
+    isFamilyFriendly: true,
+    inLanguage: 'en',
+    isAccessibleForFree: true,
+    license: siteUrl('/terms'),
+    ...(coverUrl
+      ? { primaryImageOfPage: { '@type': 'ImageObject', url: coverUrl, caption: book.title } }
+      : {}),
+    publisher: { '@id': `${publicEnv.siteUrl}#organization` },
+    mainEntity: {
+      '@type': 'ItemList',
+      name: `${book.title} contents`,
+      numberOfItems: pages.length,
+      itemListElement: pages.slice(0, 60).map((page, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        url: siteUrl(`/color/${page.slug}`),
+        name: page.title,
+        image: imageFor(page),
+      })),
+    },
+  };
+}
+
+/** The /books index: one list pointing at every book. */
+export function booksIndexSchema(books: Book[]): Json {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    '@id': siteUrl('/books#collection'),
+    name: 'Free printable coloring books',
+    url: siteUrl('/books'),
+    isFamilyFriendly: true,
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: books.length,
+      itemListElement: books.slice(0, 60).map((book, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        url: siteUrl(`/book/${book.slug}`),
+        name: book.title,
       })),
     },
   };

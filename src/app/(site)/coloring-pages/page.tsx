@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { getPages, getPopularTags, type SortOption } from '@/lib/queries';
 import { PageGrid, PageGridSkeleton } from '@/components/site/PageGrid';
+import { BooksRail } from '@/components/site/BooksRail';
 import { FilterBar } from '@/components/site/FilterBar';
 import { AdSlot } from '@/components/site/AdSlot';
 import { Pagination } from '@/components/ui/Pagination';
@@ -102,6 +103,8 @@ export default async function AllPagesRoute({ searchParams }: Props) {
         hrefFor={hrefFor}
         className="mt-10"
       />
+
+      <BooksRail />
 
       <AdSlot slot="page_bottom" />
     </div>

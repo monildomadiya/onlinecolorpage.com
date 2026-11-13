@@ -45,6 +45,8 @@ export interface ColoringPage {
   slug: string;
   title: string;
   description: string | null;
+  /** Sanitised long-form copy from the rich text editor. */
+  body_html: string | null;
   category_id: string | null;
 
   image_key: string;
@@ -83,6 +85,62 @@ export interface ColoringPage {
 /** A page joined with its category, which is what every list view needs. */
 export interface ColoringPageWithCategory extends ColoringPage {
   category: Pick<Category, 'id' | 'slug' | 'name' | 'emoji' | 'color'> | null;
+}
+
+/**
+ * A page as a grid or table needs it. `body_html` is deliberately absent: a
+ * listing of thirty cards has no use for thirty articles of copy, so the list
+ * queries never select it.
+ */
+export type ColoringPageCard = Omit<ColoringPageWithCategory, 'body_html'>;
+
+/* ------------------------------------------------------------------ */
+/*  coloring books                                                     */
+/* ------------------------------------------------------------------ */
+
+/** An admin-curated, ordered set of pages that downloads as one PDF. */
+export interface Book {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle: string | null;
+
+  description: string | null;
+  /** Sanitised rich text; rendered through <RichText />, never raw input. */
+  body_html: string | null;
+
+  cover_key: string | null;
+  pdf_key: string | null;
+  /** Null whenever the book changed after its PDF was built. */
+  pdf_built_at: string | null;
+  pdf_pages: number | null;
+
+  include_cover_page: boolean;
+
+  is_published: boolean;
+  is_featured: boolean;
+  allow_download: boolean;
+
+  download_count: number;
+
+  seo_title: string | null;
+  seo_description: string | null;
+
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** One row of the ordered join table. */
+export interface BookPageLink {
+  book_id: string;
+  page_id: string;
+  sort_order: number;
+}
+
+/** A book plus its pages, already in reading order. */
+export interface BookWithPages extends Book {
+  pages: ColoringPageCard[];
 }
 
 export interface MediaItem {
@@ -181,6 +239,8 @@ export interface AdminStats {
   pages_published: number;
   pages_draft: number;
   categories_total: number;
+  books_total: number;
+  books_published: number;
   media_total: number;
   storage_bytes: number;
   views_total: number;

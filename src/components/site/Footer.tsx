@@ -1,8 +1,8 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { Mail } from 'lucide-react';
 import { getCategories } from '@/lib/queries';
 import { getSettings } from '@/lib/settings';
-import { CrayonMark } from '@/components/ui/Decor';
 import { FacebookIcon, InstagramIcon, PinterestIcon, XIcon } from './BrandIcons';
 
 const HELP_LINKS = [
@@ -16,6 +16,7 @@ const HELP_LINKS = [
 
 const EXPLORE_LINKS = [
   { href: '/coloring-pages', label: 'All coloring pages' },
+  { href: '/books', label: 'Printable coloring books' },
   { href: '/categories', label: 'Browse themes' },
   { href: '/popular', label: 'Most loved' },
   { href: '/my-art', label: 'My sticker book' },
@@ -54,12 +55,14 @@ export async function Footer() {
       <div className="mx-auto max-w-7xl px-4 pt-14 pb-10 sm:px-6">
         <div className="grid gap-10 md:grid-cols-5">
           <div className="md:col-span-2">
-            <div className="flex items-center gap-2.5">
-              <span className="grid size-11 place-items-center rounded-2xl bg-coral text-white shadow-[var(--shadow-pill)]">
-                <CrayonMark className="size-6" />
-              </span>
-              <span className="font-display text-xl text-ink">{site.name}</span>
-            </div>
+            <Image
+              src="/logo.png"
+              alt={site.name}
+              width={692}
+              height={360}
+              sizes="124px"
+              className="h-16 w-auto"
+            />
             <p className="mt-4 max-w-md text-sm leading-relaxed text-ink-soft">
               {site.description}
             </p>

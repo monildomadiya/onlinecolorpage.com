@@ -2,6 +2,7 @@ import { Grid3x3 } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getCategoriesWithCounts } from '@/lib/queries';
 import { CategoryCard } from '@/components/site/CategoryCard';
+import { BooksRail } from '@/components/site/BooksRail';
 import { AdSlot } from '@/components/site/AdSlot';
 import { Breadcrumbs, EmptyState } from '@/components/ui/Section';
 import { ButtonLink } from '@/components/ui/Button';
@@ -59,6 +60,8 @@ export default async function CategoriesRoute() {
           ))}
         </div>
       )}
+
+      <BooksRail />
 
       <AdSlot slot="page_bottom" />
     </div>
